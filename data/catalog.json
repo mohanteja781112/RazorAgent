@@ -1,0 +1,122 @@
+[
+  {
+    "product_id": "kb_mech_01",
+    "product": "Mechanical RGB Keyboard",
+    "category": "Peripherals",
+    "price": 3200,
+    "currency": "INR",
+    "stock": 18,
+    "rating": 4.8,
+    "quality": "High",
+    "specs": { "switches": "Red Linear", "layout": "75% Compact", "lighting": "RGB Backlit" },
+    "delivery_days": 2
+  },
+  {
+    "product_id": "wrist_rest_01",
+    "product": "Ergonomic Memory Foam Wrist Rest",
+    "category": "Accessories",
+    "price": 299,
+    "currency": "INR",
+    "stock": 45,
+    "rating": 4.6,
+    "quality": "High",
+    "specs": { "material": "Memory Foam", "base": "Anti-slip Rubber" },
+    "delivery_days": 2
+  },
+  {
+    "product_id": "wrist_rest_basic",
+    "product": "Basic Wrist Rest",
+    "category": "Accessories",
+    "price": 199,
+    "currency": "INR",
+    "stock": 100,
+    "rating": 3.2,
+    "quality": "Low",
+    "specs": { "material": "Foam", "base": "Plastic" },
+    "delivery_days": 1
+  },
+  {
+    "product_id": "wrist_rest_premium",
+    "product": "Premium Ergonomic Wrist Rest",
+    "category": "Accessories",
+    "price": 499,
+    "currency": "INR",
+    "stock": 20,
+    "rating": 4.9,
+    "quality": "High",
+    "specs": { "material": "Cooling Gel", "base": "Anti-slip Rubber" },
+    "delivery_days": 3
+  },
+  {
+    "product_id": "mouse_pro_02",
+    "product": "Precision Wireless Gaming Mouse",
+    "category": "Peripherals",
+    "price": 2499,
+    "currency": "INR",
+    "stock": 12,
+    "rating": 4.5,
+    "quality": "High",
+    "specs": { "dpi": "26,000 DPI", "sensor": "Optical", "battery": "70 Hours" },
+    "delivery_days": 3
+  },
+  {
+    "product_id": "mousepad_xl",
+    "product": "Speed-Surface Desk Mat XL",
+    "category": "Accessories",
+    "price": 699,
+    "currency": "INR",
+    "stock": 30,
+    "rating": 4.7,
+    "quality": "High",
+    "specs": { "size": "900x400mm", "thickness": "4mm" },
+    "delivery_days": 2
+  },
+  {
+    "product_id": "shoes_run_01",
+    "product": "Nike Air Zoom Running Shoes",
+    "category": "Sports Footwear",
+    "price": 4499,
+    "currency": "INR",
+    "stock": 8,
+    "rating": 4.6,
+    "quality": "High",
+    "specs": { "type": "Running", "gender": "Unisex", "sole": "Zoom Air" },
+    "delivery_days": 4
+  },
+  {
+    "product_id": "socks_run_01",
+    "product": "Performance Running Socks (3-Pack)",
+    "category": "Apparel",
+    "price": 499,
+    "currency": "INR",
+    "stock": 50,
+    "rating": 4.4,
+    "quality": "Medium",
+    "specs": { "material": "Moisture Wicking", "fit": "Ankle" },
+    "delivery_days": 2
+  },
+  {
+    "product_id": "laptop_dev_01",
+    "product": "Developer Pro Laptop 16-inch",
+    "category": "Electronics",
+    "price": 58000,
+    "currency": "INR",
+    "stock": 3,
+    "rating": 4.9,
+    "quality": "High",
+    "specs": { "cpu": "M-Series", "ram": "16GB", "storage": "512GB SSD" },
+    "delivery_days": 5
+  },
+  {
+    "product_id": "laptop_bag_01",
+    "product": "Premium Water-Resistant Laptop Sleeve",
+    "category": "Accessories",
+    "price": 1299,
+    "currency": "INR",
+    "stock": 22,
+    "rating": 4.8,
+    "quality": "High",
+    "specs": { "size": "Up to 16-inch", "material": "Nylon" },
+    "delivery_days": 2
+  }
+]

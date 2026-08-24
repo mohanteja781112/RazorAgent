@@ -1,0 +1,11 @@
+node_modules/
+npm-debug.log*
+
+# Environment variables
+.env
+
+# Build output
+dist/
+
+# Project specific
+RazorAgent_Chat_History.md
