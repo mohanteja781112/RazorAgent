@@ -4,6 +4,9 @@ const crypto = require('crypto');
 const Razorpay = require('razorpay');
 const { ChatGoogleGenerativeAI } = require("@langchain/google-genai");
 const { z } = require("zod");
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 const app = express();
@@ -11,7 +14,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
+// Static serving removed - backend acts strictly as an API server
 
 // Initialize Razorpay instance (using test mode fallback if credentials not yet provided)
 const razorpayKeyId = process.env.RAZORPAY_KEY_ID || 'rzp_test_dummyKey1234';
@@ -20,6 +23,87 @@ const razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET || 'dummySecret1234';
 const razorpay = new Razorpay({
   key_id: razorpayKeyId,
   key_secret: razorpayKeySecret
+});
+
+// -------------------------------------------------------------
+// 0. MONGODB AUTHENTICATION & JWT MIDDLEWARE
+// -------------------------------------------------------------
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_for_hackathon';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/razoragent';
+
+mongoose.connect(MONGODB_URI)
+  .then(() => console.log('✅ Connected to MongoDB'))
+  .catch(err => console.error('❌ MongoDB Connection Error:', err));
+
+const User = require('./src/models/User');
+
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) return res.status(401).json({ success: false, message: 'Unauthorized' });
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ success: false, message: 'Forbidden' });
+    req.user = user;
+    next();
+  });
+};
+
+// Auth: Register
+app.post('/api/auth/register', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const existingUser = await User.findOne({ email });
+    if (existingUser) return res.status(400).json({ success: false, message: 'User already exists' });
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = new User({ email, password: hashedPassword });
+    await user.save();
+
+    const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: '24h' });
+    res.json({ success: true, token, user: { email: user.email, agentMandateActive: user.agentMandateActive, autonomousBudget: user.autonomousBudget } });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// Auth: Login
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) return res.status(400).json({ success: false, message: 'User not found' });
+
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) return res.status(400).json({ success: false, message: 'Invalid credentials' });
+
+    const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: '24h' });
+    res.json({ success: true, token, user: { email: user.email, agentMandateActive: user.agentMandateActive, autonomousBudget: user.autonomousBudget } });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// Auth: Get Current User
+app.get('/api/user/me', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    res.json({ success: true, user: { email: user.email, agentMandateActive: user.agentMandateActive, autonomousBudget: user.autonomousBudget } });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// Auth: Update Mandate Status
+app.post('/api/user/update-mandate', authenticateToken, async (req, res) => {
+  try {
+    const { agentMandateActive } = req.body;
+    const user = await User.findByIdAndUpdate(req.user.id, { agentMandateActive }, { new: true });
+    res.json({ success: true, agentMandateActive: user.agentMandateActive });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
 });
 
 // -------------------------------------------------------------
@@ -258,6 +342,51 @@ User budget constraint (if any implied): ${userBudget}`;
 // -------------------------------------------------------------
 // 3. RAZORPAY TEST MODE API INTEGRATION
 // -------------------------------------------------------------
+
+// Endpoint: Zero-Click Agentic AutoPay (Simulated Mandate/TokenHQ Charge)
+app.post('/api/agent-charge', authenticateToken, async (req, res) => {
+  try {
+    const { cartIds, currency = 'INR' } = req.body;
+
+    if (!cartIds || !Array.isArray(cartIds) || cartIds.length === 0) {
+      return res.status(400).json({ success: false, message: 'Invalid cart data' });
+    }
+    
+    // Fetch user from DB to verify real mandate status and budget
+    const user = await User.findById(req.user.id);
+    if (!user || !user.agentMandateActive) {
+      return res.status(403).json({ success: false, message: 'Agentic AutoPay is not authorized by this user.' });
+    }
+
+    // Backend Recalculation: Final Amount Integrity Check
+    let authoritativeTotal = 0;
+    for (const id of cartIds) {
+      const product = MERCHANT_CATALOG.find(p => p.product_id === id);
+      if (!product) {
+        return res.status(400).json({ success: false, message: `Product ID ${id} not found in catalog.` });
+      }
+      authoritativeTotal += product.price;
+    }
+
+    // Secure Server-Side Policy check against DB User Budget
+    if (authoritativeTotal > user.autonomousBudget) {
+       return res.status(403).json({ success: false, message: `Agent transaction blocked: total ₹${authoritativeTotal} exceeds autonomous limit (₹${user.autonomousBudget}).`});
+    }
+
+    // Return instant simulated success for Agent Payment
+    return res.json({
+      success: true,
+      order_id: 'order_agent_' + Date.now(),
+      payment_id: 'pay_agent_' + Date.now(),
+      amount: authoritativeTotal * 100,
+      currency,
+      is_agent_autopay: true
+    });
+  } catch (error) {
+    console.error('Agent AutoPay Error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
 
 // Endpoint: Create Razorpay Order
 app.post('/api/create-order', async (req, res) => {

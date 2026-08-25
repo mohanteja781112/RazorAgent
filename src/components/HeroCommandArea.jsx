@@ -18,8 +18,7 @@ export default function HeroCommandArea({
   userBudget,
   setUserBudget,
   onExecute,
-  isProcessing,
-  simulatedFailureMode
+  isProcessing
 }) {
   const [isRecording, setIsRecording] = useState(false);
   const [recognition, setRecognition] = useState(null);

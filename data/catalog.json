@@ -118,5 +118,17 @@
     "quality": "High",
     "specs": { "size": "Up to 16-inch", "material": "Nylon" },
     "delivery_days": 2
+  },
+  {
+    "product_id": "demo_item_2rs",
+    "product": "Mini Demo Sticker",
+    "category": "Accessories",
+    "price": 2,
+    "currency": "INR",
+    "stock": 1000,
+    "rating": 4.9,
+    "quality": "Medium",
+    "specs": { "size": "Small", "type": "Demo" },
+    "delivery_days": 1
   }
 ]

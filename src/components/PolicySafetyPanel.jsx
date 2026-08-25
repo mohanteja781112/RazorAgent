@@ -8,7 +8,8 @@ import {
   ArrowRight, 
   HelpCircle,
   AlertOctagon,
-  CheckCircle2
+  CheckCircle2,
+  Zap
 } from 'lucide-react';
 
 export default function PolicySafetyPanel({
@@ -16,6 +17,7 @@ export default function PolicySafetyPanel({
   totalAmount,
   policyStatus,
   requiresHumanApproval,
+  isAgentAuthorized,
   onApproveHumanGate,
   onInitiatePayment,
   onClarifyQuery
@@ -138,9 +140,19 @@ export default function PolicySafetyPanel({
             onClick={onInitiatePayment}
             className="w-full flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-extrabold text-sm shadow-lg shadow-emerald-500/25 transition-all cursor-pointer"
           >
-            <Lock className="w-4 h-4 stroke-[2.5]" />
-            <span>Continue & Pay ₹{totalAmount.toLocaleString('en-IN')}</span>
-            <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+            {isAgentAuthorized ? (
+              <>
+                <Zap className="w-4 h-4 stroke-[2.5]" />
+                <span>Auto-Pay via Authorized Agent (₹{totalAmount.toLocaleString('en-IN')})</span>
+                <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+              </>
+            ) : (
+              <>
+                <Lock className="w-4 h-4 stroke-[2.5]" />
+                <span>Continue & Pay ₹{totalAmount.toLocaleString('en-IN')}</span>
+                <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+              </>
+            )}
           </button>
         )}
       </div>

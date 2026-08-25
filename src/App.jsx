@@ -8,25 +8,43 @@ import PolicySafetyPanel from './components/PolicySafetyPanel.jsx';
 import AuditTelemetryDrawer from './components/AuditTelemetryDrawer.jsx';
 import PaymentExperience from './components/PaymentExperience.jsx';
 import FailureStateBanner from './components/FailureStateBanner.jsx';
-import MerchantGrowthDashboard from './components/MerchantGrowthDashboard.jsx';
 import JsonCatalogModal from './components/JsonCatalogModal.jsx';
 import HumanApprovalModal from './components/HumanApprovalModal.jsx';
 import AuthOverlay from './components/AuthOverlay.jsx';
 import LandingPage from './components/LandingPage.jsx';
+import UserProfileModal from './components/UserProfileModal.jsx';
 import { ShoppingCart, Bot, Zap, ArrowRight, ShieldCheck } from 'lucide-react';
 
 export default function App() {
   // Auth State
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isAgentAuthorized, setIsAgentAuthorized] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
 
-  // Navigation State
-  const [activeTab, setActiveTab] = useState('workspace'); // 'workspace' | 'merchant'
+  // Fetch Session on Mount
+  useEffect(() => {
+    const token = localStorage.getItem('razoragent_token');
+    if (token) {
+      fetch('/api/user/me', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setIsAuthenticated(true);
+          setIsAgentAuthorized(data.user.agentMandateActive);
+          setUserEmail(data.user.email);
+          setUserBudget(data.user.autonomousBudget);
+        }
+      })
+      .catch(err => console.error("Session restore failed:", err));
+    }
+  }, []);
 
   // Form & Budget State
   const [promptInput, setPromptInput] = useState('Find me a mechanical keyboard under ₹4,000 and buy it');
   const [userBudget, setUserBudget] = useState(3500);
-  const [simulatedFailureMode, setSimulatedFailureMode] = useState(false);
 
   // Workflow & Active Commerce State
   const [isProcessing, setIsProcessing] = useState(false);
@@ -45,12 +63,6 @@ export default function App() {
   const [paymentFailed, setPaymentFailed] = useState(false);
   const [paymentErrorMessage, setPaymentErrorMessage] = useState('');
 
-  // Live Merchant Analytics State
-  const [aiOrders, setAiOrders] = useState(37);
-  const [upsellsAccepted, setUpsellsAccepted] = useState(14);
-  const [cartsRecovered, setCartsRecovered] = useState(8);
-  const [revenueUplift, setRevenueUplift] = useState(12450);
-
   // Telemetry & Modals
   const [telemetryLogs, setTelemetryLogs] = useState([
     {
@@ -60,8 +72,10 @@ export default function App() {
     }
   ]);
   const [isAuditDrawerOpen, setIsAuditDrawerOpen] = useState(false);
+  const [authMode, setAuthMode] = useState('login');
   const [isJsonModalOpen, setIsJsonModalOpen] = useState(false);
   const [isHumanGateModalOpen, setIsHumanGateModalOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   // Helper to add telemetry logs
   const appendTelemetryLog = (event, details) => {
@@ -74,7 +88,7 @@ export default function App() {
   };
 
   // Execute Agent Commerce Order
-  const executeAgentOrder = async (textOverride = null, forceFailureMode = null) => {
+  const executeAgentOrder = async (textOverride = null) => {
     const prompt = (textOverride !== null ? textOverride : promptInput).trim();
     if (!prompt) return;
 
@@ -89,13 +103,16 @@ export default function App() {
     setTimeout(() => setCurrentStep(2), 400);
 
     try {
+      const token = localStorage.getItem('razoragent_token');
       const response = await fetch('/api/agent/interact', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
         body: JSON.stringify({
           prompt,
-          userBudget,
-          forceFailureMode
+          userBudget
         })
       });
 
@@ -159,19 +176,99 @@ export default function App() {
     }
   };
 
-  // Initiate Razorpay Checkout
+  // Simulate Razorpay Mandate Setup and Sync to DB
+  const setupAgentMandate = async () => {
+    appendTelemetryLog('AGENT_PAYMENT_SETUP', 'Initiating Razorpay TokenHQ/Mandate authorization flow...');
+    
+    // Simulate real Razorpay checkout for Rs 1 authorization
+    const confirmSetup = window.confirm(
+      "[RAZORPAY CHECKOUT - SET UP AGENT PAYMENTS]\n\nAuthorize RazorAgent to execute autonomous payments on your behalf up to ₹5,000/month?\n\n(This simulates the real Razorpay mandate/token setup flow)\n\nClick OK to Authorize."
+    );
+
+    if (confirmSetup) {
+      try {
+        const token = localStorage.getItem('razoragent_token');
+        if (!token) {
+          alert('You must be logged in to set up Agent Payments.');
+          return;
+        }
+
+        const res = await fetch('/api/user/update-mandate', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ agentMandateActive: true })
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+          setIsAgentAuthorized(true);
+          appendTelemetryLog('AGENT_PAYMENT_AUTHORIZED', 'User successfully authorized UPI AutoPay Mandate. DB Updated.');
+          alert("✅ Agent Payments Enabled! Future payments under your budget will be processed instantly.");
+        }
+      } catch (err) {
+        appendTelemetryLog('ERROR', `Failed to save mandate: ${err.message}`);
+      }
+    } else {
+      appendTelemetryLog('AGENT_PAYMENT_SETUP_FAILED', 'User cancelled mandate authorization.');
+    }
+  };
+
+  // Initiate Razorpay Payment (or Zero-Click Agent Pay)
   const initiateRazorpayPayment = async () => {
     setIsHumanGateModalOpen(false);
     setCurrentStep(4); // Step 04: TRANSACT
+    
+    // ZERO-CLICK AGENT AUTOPAY FLOW
+    if (isAgentAuthorized && totalAmount <= userBudget) {
+      appendTelemetryLog('AGENT_AUTOPAY_INITIATED', `Zero-click execution started via authorized mandate for ₹${totalAmount}...`);
+      try {
+        const activeCart = upsellIncluded ? cart : cart.filter(item => !item.is_upsell);
+        const cartIds = activeCart.map(item => item.product_id);
+
+        const token = localStorage.getItem('razoragent_token');
+        const res = await fetch('/api/agent-charge', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': token ? `Bearer ${token}` : ''
+          },
+          body: JSON.stringify({ cartIds })
+        });
+
+        const orderData = await res.json();
+        if (!orderData.success) throw new Error(orderData.message);
+
+        // Instantly verify on backend (simulate S2S success)
+        verifyPaymentOnBackend({
+          razorpay_order_id: orderData.order_id,
+          razorpay_payment_id: orderData.payment_id,
+          razorpay_signature: 'agent_autopay_signature',
+          is_agent_autopay: true
+        }, false);
+
+      } catch (err) {
+        appendTelemetryLog('ERROR', `Agent AutoPay Error: ${err.message}`);
+      }
+      return; // Exit here, do not open Razorpay UI
+    }
+
+    // STANDARD RAZORPAY CHECKOUT FLOW
     appendTelemetryLog('RAZORPAY_API', `Requesting Razorpay order creation for ₹${totalAmount}...`);
 
     try {
       const activeCart = upsellIncluded ? cart : cart.filter(item => !item.is_upsell);
       const cartIds = activeCart.map(item => item.product_id);
 
+      const token = localStorage.getItem('razoragent_token');
       const res = await fetch('/api/create-order', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
         body: JSON.stringify({ cartIds })
       });
 
@@ -310,15 +407,30 @@ export default function App() {
   const mainProductItem = cart.length > 0 ? cart[0] : null;
   const upsellItem = cart.find(i => i.is_upsell);
 
+  const handleLogout = () => {
+    localStorage.removeItem('razoragent_token');
+    setIsAuthenticated(false);
+    setUserEmail('');
+    setIsAgentAuthorized(false);
+    setCart([]);
+    setCurrentStep(1);
+  };
+
   if (!isAuthenticated) {
     return (
       <>
-        <LandingPage onLogin={() => setIsAuthModalOpen(true)} />
+        <LandingPage onLogin={(mode) => {
+          setAuthMode(mode || 'login');
+          setIsAuthModalOpen(true);
+        }} />
         {isAuthModalOpen && (
           <AuthOverlay 
-            onLogin={() => {
+            initialMode={authMode}
+            onLogin={(user) => {
               setIsAuthenticated(true);
               setIsAuthModalOpen(false);
+              if (user && user.email) setUserEmail(user.email);
+              if (user && user.agentMandateActive !== undefined) setIsAgentAuthorized(user.agentMandateActive);
             }} 
             onClose={() => setIsAuthModalOpen(false)} 
           />
@@ -332,25 +444,21 @@ export default function App() {
       
       {/* TOP NAV HEADER */}
       <Header
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
         onOpenJsonModal={() => setIsJsonModalOpen(true)}
         onToggleTelemetryDrawer={() => setIsAuditDrawerOpen(!isAuditDrawerOpen)}
         isAuditDrawerOpen={isAuditDrawerOpen}
-        simulatedFailureMode={simulatedFailureMode}
-        setSimulatedFailureMode={setSimulatedFailureMode}
         telemetryLogsCount={telemetryLogs.length}
+        isAgentAuthorized={isAgentAuthorized}
+        onSetupAgentPayments={setupAgentMandate}
+        userEmail={userEmail}
+        onLogout={handleLogout}
+        onOpenProfile={() => setIsProfileModalOpen(true)}
       />
 
       {/* MAIN CONTENT WRAPPER (~1400px Max Width) */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-6 space-y-6">
 
-        {activeTab === 'merchant' ? (
-          /* SECONDARY TAB: MERCHANT GROWTH DASHBOARD */
-          <MerchantGrowthDashboard />
-        ) : (
-          /* PRIMARY TAB: AGENT WORKSPACE */
-          <>
+        <>
             {/* 1. HERO COMMAND AREA */}
             <HeroCommandArea
               promptInput={promptInput}
@@ -359,7 +467,6 @@ export default function App() {
               setUserBudget={setUserBudget}
               onExecute={executeAgentOrder}
               isProcessing={isProcessing}
-              simulatedFailureMode={simulatedFailureMode}
             />
 
             {/* 2. TRANSACTION WORKFLOW STEPPER */}
@@ -431,6 +538,7 @@ export default function App() {
                       totalAmount={totalAmount}
                       policyStatus={policyStatus}
                       requiresHumanApproval={requiresHumanApproval}
+                      isAgentAuthorized={isAgentAuthorized}
                       onApproveHumanGate={() => setIsHumanGateModalOpen(true)}
                       onInitiatePayment={initiateRazorpayPayment}
                       onClarifyQuery={() => executeAgentOrder('Find me a mechanical RGB keyboard with red switches under ₹4,000')}
@@ -471,18 +579,7 @@ export default function App() {
               </div>
             )}
 
-            {/* LOWER SECTION: SECONDARY MERCHANT GROWTH PREVIEW */}
-            <div className="pt-6 border-t border-slate-800/80">
-              <MerchantGrowthDashboard 
-                aiOrders={aiOrders}
-                upsellsAccepted={upsellsAccepted}
-                cartsRecovered={cartsRecovered}
-                revenueUplift={revenueUplift}
-              />
-            </div>
           </>
-        )}
-
       </main>
 
       {/* FOOTER */}
@@ -512,6 +609,15 @@ export default function App() {
         userBudget={userBudget}
         onApprove={handleApproveHumanGate}
         onReject={handleRejectHumanGate}
+      />
+
+      {/* USER PROFILE MODAL */}
+      <UserProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        userEmail={userEmail}
+        userBudget={userBudget}
+        isAgentAuthorized={isAgentAuthorized}
       />
 
     </div>

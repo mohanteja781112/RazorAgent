@@ -10,6 +10,10 @@
   h1, h2, h3, h4, .font-heading {
     font-family: 'Outfit', sans-serif;
   }
+
+  button, a, [role="button"], select {
+    cursor: pointer !important;
+  }
 }
 
 /* Custom Scrollbars */

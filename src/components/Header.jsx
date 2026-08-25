@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Zap, 
   Trophy, 
@@ -9,19 +9,23 @@ import {
   Bot, 
   Bug, 
   CheckCircle2,
-  HelpCircle
+  HelpCircle,
+  LogOut,
+  User
 } from 'lucide-react';
 
 export default function Header({
-  activeTab,
-  setActiveTab,
   onOpenJsonModal,
   onToggleTelemetryDrawer,
   isAuditDrawerOpen,
-  simulatedFailureMode,
-  setSimulatedFailureMode,
-  telemetryLogsCount
+  telemetryLogsCount,
+  isAgentAuthorized,
+  onSetupAgentPayments,
+  userEmail,
+  onLogout,
+  onOpenProfile
 }) {
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   return (
     <header className="sticky top-0 z-40 bg-[#0b0f19]/90 backdrop-blur-md border-b border-slate-800/80 px-4 lg:px-8 py-3.5 transition-all">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
@@ -55,49 +59,12 @@ export default function Header({
             <span>Razorpay Buildathon • Track 01</span>
           </div>
 
-          <div className="flex bg-[#131b2e] p-1 rounded-xl border border-slate-800">
-            <button
-              onClick={() => setActiveTab('workspace')}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                activeTab === 'workspace'
-                  ? 'bg-gradient-to-r from-sky-500 to-indigo-600 text-white shadow-md shadow-sky-500/20'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
-              }`}
-            >
-              <Bot className="w-3.5 h-3.5" />
-              <span>Agent Workspace</span>
-            </button>
-            <button
-              onClick={() => setActiveTab('merchant')}
-              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                activeTab === 'merchant'
-                  ? 'bg-gradient-to-r from-sky-500 to-indigo-600 text-white shadow-md shadow-sky-500/20'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
-              }`}
-            >
-              <TrendingUp className="w-3.5 h-3.5" />
-              <span>Merchant Growth</span>
-            </button>
-          </div>
+
         </div>
 
         {/* RIGHT: STATUS INDICATORS & ACTIONS */}
         <div className="flex items-center gap-3">
-          {/* Failure Simulation Toggle Button */}
-          <button
-            onClick={() => setSimulatedFailureMode(!simulatedFailureMode)}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all ${
-              simulatedFailureMode
-                ? 'bg-rose-500/10 text-rose-400 border-rose-500/30'
-                : 'bg-slate-800/40 text-slate-400 border-slate-700/60 hover:text-slate-200'
-            }`}
-            title="Simulate Bank Payment Decline for testing error recovery"
-          >
-            <Bug className={`w-3.5 h-3.5 ${simulatedFailureMode ? 'text-rose-400 animate-pulse' : 'text-slate-400'}`} />
-            <span className="hidden sm:inline">
-              {simulatedFailureMode ? 'Fail Mode: ON' : 'Simulate Failure'}
-            </span>
-          </button>
+
 
           {/* Machine Catalog JSON Button */}
           <button
@@ -136,11 +103,59 @@ export default function Header({
             <span>Razorpay Test Mode</span>
           </div>
 
-          {/* User Profile */}
-          <div className="flex items-center gap-2 pl-3 ml-1 border-l border-slate-700/60">
-            <div className="w-7 h-7 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-300 font-bold text-[10px]">
-              DU
+          {/* Agent Authorization Status */}
+          {isAgentAuthorized ? (
+            <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold" title="Agent is authorized for Zero-Click Payments">
+              <CheckCircle2 className="w-4 h-4" />
+              <span>Agent Mandate Active</span>
             </div>
+          ) : (
+            <button
+              onClick={onSetupAgentPayments}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-md shadow-purple-500/20 transition-all"
+            >
+              <Zap className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Set Up Agent Payments</span>
+            </button>
+          )}
+
+          {/* User Profile */}
+          <div className="relative flex items-center pl-3 ml-1 border-l border-slate-700/60">
+            <button 
+              onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+              className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 border border-indigo-400/50 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-indigo-500/20 hover:scale-105 transition-transform"
+              title={userEmail || 'Demo User'}
+            >
+              {userEmail ? userEmail.charAt(0).toUpperCase() : 'DU'}
+            </button>
+
+            {isProfileDropdownOpen && (
+              <div className="absolute right-0 top-full mt-2 w-48 bg-[#131b2e] border border-slate-700/60 rounded-xl shadow-xl py-1 z-50">
+                <div className="px-4 py-2 border-b border-slate-700/60 mb-1">
+                  <p className="text-xs text-slate-400 truncate">{userEmail || 'demo@razorpay.com'}</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setIsProfileDropdownOpen(false);
+                    if (onOpenProfile) onOpenProfile();
+                  }}
+                  className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-800/80 hover:text-white flex items-center gap-2 transition-colors"
+                >
+                  <User className="w-4 h-4" />
+                  My Profile
+                </button>
+                <button
+                  onClick={() => {
+                    setIsProfileDropdownOpen(false);
+                    if (onLogout) onLogout();
+                  }}
+                  className="w-full text-left px-4 py-2 text-sm text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 flex items-center gap-2 transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Log Out
+                </button>
+              </div>
+            )}
           </div>
         </div>
 

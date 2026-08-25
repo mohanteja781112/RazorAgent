@@ -48,10 +48,13 @@ export default function LandingPage({ onLogin }) {
           </div>
 
           <div className="flex items-center gap-4">
-            <button onClick={onLogin} className="text-sm font-semibold text-slate-300 hover:text-white transition-colors">
+            <button onClick={() => onLogin('login')} className="text-sm font-semibold text-slate-300 hover:text-white transition-colors">
               Login
             </button>
-            <button onClick={onLogin} className="hidden sm:flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 text-white text-sm font-bold shadow-lg shadow-sky-500/25 hover:shadow-sky-500/40 hover:-translate-y-0.5 transition-all">
+            <button onClick={() => onLogin('signup')} className="text-sm font-semibold text-slate-300 hover:text-white transition-colors">
+              Sign Up
+            </button>
+            <button onClick={() => onLogin('signup')} className="hidden sm:flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 text-white text-sm font-bold shadow-lg shadow-sky-500/25 hover:shadow-sky-500/40 hover:-translate-y-0.5 transition-all">
               Launch Agent <ArrowRight className="w-4 h-4" />
             </button>
           </div>

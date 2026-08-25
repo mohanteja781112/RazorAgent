@@ -2,16 +2,39 @@ import React, { useState } from 'react';
 import { Bot, Zap, ArrowRight, ShieldCheck, Mail, Lock, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function AuthOverlay({ onLogin, onClose }) {
+export default function AuthOverlay({ initialMode = 'login', onLogin, onClose }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoginMode, setIsLoginMode] = useState(initialMode === 'login');
   const [isHovered, setIsHovered] = useState(false);
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Mock login for demo purposes
-    if (email && password) {
-      onLogin();
+    setError(null);
+    setIsLoading(true);
+
+    try {
+      const endpoint = isLoginMode ? '/api/auth/login' : '/api/auth/register';
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await res.json();
+      if (!data.success) {
+        throw new Error(data.message);
+      }
+
+      // Store JWT in localStorage
+      localStorage.setItem('razoragent_token', data.token);
+      onLogin(data.user);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -49,9 +72,19 @@ export default function AuthOverlay({ onLogin, onClose }) {
               <Zap className="w-7 h-7 text-sky-400 fill-sky-400/20" />
             </div>
           </div>
-          <h2 className="text-2xl font-bold text-white font-heading tracking-tight">Welcome to RazorAgent</h2>
-          <p className="text-sm text-slate-400 mt-2">Log in to your Autonomous Commerce Dashboard</p>
+          <h2 className="text-2xl font-bold text-white font-heading tracking-tight">
+            {isLoginMode ? 'Welcome Back' : 'Create Account'}
+          </h2>
+          <p className="text-sm text-slate-400 mt-2">
+            {isLoginMode ? 'Log in to your RazorAgent dashboard.' : 'Sign up for a secure agent identity.'}
+          </p>
         </div>
+
+        {error && (
+          <div className="mb-4 p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-semibold text-center">
+            {error}
+          </div>
+        )}
 
         {/* Form Section */}
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -98,7 +131,7 @@ export default function AuthOverlay({ onLogin, onClose }) {
             <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
             <span className="relative z-10 flex items-center gap-2">
               <ShieldCheck className="w-4 h-4" />
-              Secure Login
+              {isLoading ? 'Processing...' : isLoginMode ? 'Log In' : 'Sign Up'}
             </span>
             <ArrowRight className={`w-4 h-4 relative z-10 transition-transform duration-300 ${isHovered ? 'translate-x-1' : ''}`} />
           </button>
@@ -106,8 +139,15 @@ export default function AuthOverlay({ onLogin, onClose }) {
 
         {/* Footer Hint */}
         <div className="mt-8 pt-6 border-t border-slate-800 text-center">
-          <p className="text-xs text-slate-500 font-mono">
-            Demo Mode: Enter any email/password to continue
+          <p className="text-xs text-slate-400">
+            {isLoginMode ? "Don't have an account? " : "Already have an account? "}
+            <button 
+              type="button"
+              onClick={() => setIsLoginMode(!isLoginMode)}
+              className="text-sky-400 hover:text-sky-300 font-semibold underline underline-offset-2"
+            >
+              {isLoginMode ? "Sign up here" : "Log in here"}
+            </button>
           </p>
         </div>
 
