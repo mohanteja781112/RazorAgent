@@ -102,9 +102,9 @@ export default function HeroCommandArea({
               value={promptInput}
               onChange={(e) => setPromptInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Find me a mechanical keyboard under ₹4,000 and buy it..."
+              placeholder="Find me a mechanical keyboard under ₹4,000"
               rows={2}
-              className="w-full bg-transparent text-white placeholder-slate-500 text-sm md:text-base focus:outline-none resize-none px-2 py-1"
+              className="w-full bg-transparent text-white placeholder-white/20 text-sm md:text-base focus:outline-none resize-none px-2 py-1"
             />
 
             <div className="flex items-center gap-2 self-end md:self-center shrink-0">

@@ -9,7 +9,8 @@ import {
   HelpCircle,
   AlertOctagon,
   CheckCircle2,
-  Zap
+  Zap,
+  Loader2
 } from 'lucide-react';
 
 export default function PolicySafetyPanel({
@@ -17,12 +18,13 @@ export default function PolicySafetyPanel({
   totalAmount,
   policyStatus,
   requiresHumanApproval,
-  isAgentAuthorized,
+  agentAuthorization,
   onApproveHumanGate,
   onInitiatePayment,
-  onClarifyQuery
+  onClarifyQuery,
+  isProcessingPayment
 }) {
-  const difference = totalAmount - userBudget;
+  const difference = Math.abs(userBudget - totalAmount);
   const isOverBudget = totalAmount > userBudget;
 
   let statusBadgeColor = 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30';
@@ -88,10 +90,10 @@ export default function PolicySafetyPanel({
           isOverBudget ? 'bg-amber-500/10 border-amber-500/30 text-amber-300' : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
         }`}>
           <span className="text-[11px] font-semibold uppercase tracking-wider block opacity-90">
-            Difference
+            {isOverBudget ? 'Exceeds By' : 'Remaining'}
           </span>
           <span className="text-lg font-extrabold font-heading block mt-0.5">
-            {difference > 0 ? `+₹${difference.toLocaleString('en-IN')}` : `₹${difference.toLocaleString('en-IN')}`}
+            ₹{Math.abs(difference).toLocaleString('en-IN')}
           </span>
         </div>
 
@@ -140,17 +142,29 @@ export default function PolicySafetyPanel({
             onClick={onInitiatePayment}
             className="w-full flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-extrabold text-sm shadow-lg shadow-emerald-500/25 transition-all cursor-pointer"
           >
-            {isAgentAuthorized ? (
+            {agentAuthorization?.status === 'active' ? (
               <>
-                <Zap className="w-4 h-4 stroke-[2.5]" />
-                <span>Auto-Pay via Authorized Agent (₹{totalAmount.toLocaleString('en-IN')})</span>
-                <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+                {isProcessingPayment ? (
+                  <Loader2 className="w-4 h-4 animate-spin stroke-[2.5]" />
+                ) : (
+                  <Zap className="w-4 h-4 stroke-[2.5]" />
+                )}
+                <span>
+                  {isProcessingPayment ? 'Processing Auto-Pay...' : `Auto-Pay via Authorized Agent (₹${totalAmount.toLocaleString('en-IN')})`}
+                </span>
+                {!isProcessingPayment && <ArrowRight className="w-4 h-4 stroke-[2.5]" />}
               </>
             ) : (
               <>
-                <Lock className="w-4 h-4 stroke-[2.5]" />
-                <span>Continue & Pay ₹{totalAmount.toLocaleString('en-IN')}</span>
-                <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+                {isProcessingPayment ? (
+                  <Loader2 className="w-4 h-4 animate-spin stroke-[2.5]" />
+                ) : (
+                  <Lock className="w-4 h-4 stroke-[2.5]" />
+                )}
+                <span>
+                  {isProcessingPayment ? 'Initiating Checkout...' : `Continue & Pay ₹${totalAmount.toLocaleString('en-IN')}`}
+                </span>
+                {!isProcessingPayment && <ArrowRight className="w-4 h-4 stroke-[2.5]" />}
               </>
             )}
           </button>

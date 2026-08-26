@@ -2,7 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, User, Zap, Wallet, CheckCircle2 } from 'lucide-react';
 
-export default function UserProfileModal({ isOpen, onClose, userEmail, userBudget, isAgentAuthorized }) {
+export default function UserProfileModal({ isOpen, onClose, userEmail, agentAuthorization, onRevoke }) {
   if (!isOpen) return null;
 
   return (
@@ -41,33 +41,50 @@ export default function UserProfileModal({ isOpen, onClose, userEmail, userBudge
                   <Wallet className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-slate-400 uppercase">Autonomous Budget</p>
-                  <p className="text-lg font-bold text-white">₹{userBudget?.toLocaleString('en-IN')}</p>
+                  <p className="text-xs font-semibold text-slate-400 uppercase">Agent Transaction Limit</p>
+                  <p className="text-lg font-bold text-white">
+                    {agentAuthorization?.status === 'active' 
+                      ? `₹${agentAuthorization.transaction_limit?.toLocaleString('en-IN')}` 
+                      : 'None'}
+                  </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400">
-                  <Zap className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-slate-400 uppercase">Zero-Click Mandate</p>
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    {isAgentAuthorized ? (
-                      <>
-                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                        <span className="text-sm font-bold text-emerald-400">Active</span>
-                      </>
-                    ) : (
-                      <>
-                        <span className="text-sm font-bold text-slate-500">Not Configured</span>
-                      </>
-                    )}
+            <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4 flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400">
+                    <Zap className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-slate-400 uppercase">Zero-Click Authorization</p>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      {agentAuthorization?.status === 'active' ? (
+                        <>
+                          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                          <span className="text-sm font-bold text-emerald-400">Active ({agentAuthorization.payment_method?.toUpperCase()})</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-sm font-bold text-slate-500">Not Configured / Revoked</span>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
+              
+              {agentAuthorization?.status === 'active' && (
+                <div className="pt-3 border-t border-slate-800/80">
+                  <button 
+                    onClick={onRevoke}
+                    className="w-full px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-semibold rounded-lg text-sm transition-colors border border-rose-500/20"
+                  >
+                    Revoke Agent Payments
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 

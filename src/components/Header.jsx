@@ -19,11 +19,12 @@ export default function Header({
   onToggleTelemetryDrawer,
   isAuditDrawerOpen,
   telemetryLogsCount,
-  isAgentAuthorized,
+  agentAuthorization,
   onSetupAgentPayments,
   userEmail,
   onLogout,
-  onOpenProfile
+  onOpenProfile,
+  onOpenHistory
 }) {
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   return (
@@ -104,7 +105,7 @@ export default function Header({
           </div>
 
           {/* Agent Authorization Status */}
-          {isAgentAuthorized ? (
+          {agentAuthorization?.status === 'active' ? (
             <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold" title="Agent is authorized for Zero-Click Payments">
               <CheckCircle2 className="w-4 h-4" />
               <span>Agent Mandate Active</span>
@@ -134,6 +135,16 @@ export default function Header({
                 <div className="px-4 py-2 border-b border-slate-700/60 mb-1">
                   <p className="text-xs text-slate-400 truncate">{userEmail || 'demo@razorpay.com'}</p>
                 </div>
+                <button
+                  onClick={() => {
+                    setIsProfileDropdownOpen(false);
+                    if (onOpenHistory) onOpenHistory();
+                  }}
+                  className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-800/80 hover:text-white flex items-center gap-2 transition-colors"
+                >
+                  <History className="w-4 h-4 text-[#00E676]" />
+                  Agentic History
+                </button>
                 <button
                   onClick={() => {
                     setIsProfileDropdownOpen(false);

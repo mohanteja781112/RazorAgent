@@ -10,10 +10,15 @@ export default function PaymentExperience({
 }) {
   if (status === 'SUCCESS') {
     return (
-      <div className="rounded-2xl bg-gradient-to-b from-[#0c241a] via-[#091a13] to-[#090d16] border border-emerald-500/40 p-6 md:p-8 text-center space-y-5 shadow-2xl animate-in zoom-in-95 duration-300">
+      <div className="rounded-2xl bg-gradient-to-b from-[#0c241a] via-[#091a13] to-[#090d16] border border-emerald-500/40 p-6 md:p-8 text-center space-y-5 shadow-2xl animate-in zoom-in-95 fade-in duration-500">
         
-        <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/20">
-          <CheckCircle2 className="w-10 h-10 stroke-[2.5]" />
+        <div className="relative w-20 h-20 mx-auto">
+          {/* Outer Ripple Effect */}
+          <div className="absolute inset-0 rounded-full bg-emerald-500/20 animate-ping opacity-75"></div>
+          {/* Inner Coin */}
+          <div className="relative w-full h-full rounded-full bg-gradient-to-b from-emerald-400 to-emerald-600 text-white border-4 border-[#0c241a] flex items-center justify-center shadow-[0_0_40px_rgba(16,185,129,0.4)] animate-in slide-in-from-top-10 zoom-in spin-in-12 duration-700 ease-out">
+            <CheckCircle2 className="w-10 h-10 stroke-[3]" />
+          </div>
         </div>
 
         <div className="space-y-1">
