@@ -16,7 +16,7 @@ export default function RazorAgentSplash() {
         transition={{ type: 'spring', damping: 15, stiffness: 100, delay: 0.2 }}
         className="relative z-10 w-36 h-36 mb-6"
       >
-        <img src="public/images/RazorAgent_Logo.png" alt="RazorAgent" className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(14,165,233,0.5)]" />
+        <img src="/images/RazorAgent_Logo.png" alt="RazorAgent" className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(14,165,233,0.5)]" />
       </motion.div>
       <motion.h1 
         initial={{ opacity: 0, y: 10 }}

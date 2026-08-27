@@ -31,10 +31,8 @@ export default function LandingPage({ onLogin, isAuthenticated, onGoToWorkspace 
       <nav className="relative z-50 border-b border-slate-800/60 bg-[#060913]/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-400 to-indigo-600 p-0.5 shadow-lg shadow-sky-500/20">
-              <div className="w-full h-full bg-[#060913] rounded-[10px] flex items-center justify-center">
-                <Zap className="w-5 h-5 text-sky-400" />
-              </div>
+            <div className="w-10 h-10 flex items-center justify-center">
+              <img src="/images/RazorAgent_Logo.png" alt="RazorAgent Logo" className="w-full h-full object-contain" />
             </div>
             <span className="text-xl font-bold tracking-tight text-white font-heading">
               RazorAgent

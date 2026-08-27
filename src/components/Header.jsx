@@ -37,7 +37,7 @@ export default function Header({
         <div className="flex items-center gap-8">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 flex items-center justify-center">
-              <img src="public/images/RazorAgent_Logo.png" alt="RazorAgent Logo" className="w-full h-full object-contain" />
+              <img src="/images/RazorAgent_Logo.png" alt="RazorAgent Logo" className="w-full h-full object-contain" />
             </div>
             <h1 className="text-xl font-bold tracking-tight text-white font-heading">
               RazorAgent
