@@ -12,6 +12,11 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user'
+  },
   agentAuthorization: {
     status: { type: String, enum: ['inactive', 'pending', 'active', 'expired', 'revoked', 'failed'], default: 'inactive' },
     payment_method: { type: String, default: 'upi' },

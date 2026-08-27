@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Zap, Bot, ShieldCheck, CreditCard, ArrowRight, Sparkles, MessageSquareCode, ShoppingCart } from 'lucide-react';
 
-export default function LandingPage({ onLogin }) {
+export default function LandingPage({ onLogin, isAuthenticated, onGoToWorkspace }) {
   // Animation Variants
   const fadeUp = {
     hidden: { opacity: 0, y: 30 },
@@ -48,15 +48,15 @@ export default function LandingPage({ onLogin }) {
           </div>
 
           <div className="flex items-center gap-4">
-            <button onClick={() => onLogin('login')} className="text-sm font-semibold text-slate-300 hover:text-white transition-colors">
-              Login
-            </button>
-            <button onClick={() => onLogin('signup')} className="text-sm font-semibold text-slate-300 hover:text-white transition-colors">
-              Sign Up
-            </button>
-            <button onClick={() => onLogin('signup')} className="hidden sm:flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 text-white text-sm font-bold shadow-lg shadow-sky-500/25 hover:shadow-sky-500/40 hover:-translate-y-0.5 transition-all">
-              Launch Agent <ArrowRight className="w-4 h-4" />
-            </button>
+            {!isAuthenticated ? (
+              <button onClick={() => onLogin('signup')} className="hidden sm:flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 text-white text-sm font-bold shadow-lg shadow-sky-500/25 hover:shadow-sky-500/40 hover:-translate-y-0.5 transition-all">
+                Launch Agent <ArrowRight className="w-4 h-4" />
+              </button>
+            ) : (
+              <button onClick={onGoToWorkspace} className="hidden sm:flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-sm font-bold shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:-translate-y-0.5 transition-all">
+                Enter Workspace <ArrowRight className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
       </nav>
@@ -82,12 +82,20 @@ export default function LandingPage({ onLogin }) {
             </motion.p>
             
             <motion.div variants={fadeUp} className="flex flex-wrap items-center gap-4 pt-4">
-              <button onClick={onLogin} className="flex items-center gap-2 px-8 py-4 rounded-xl bg-white text-[#060913] text-base font-bold hover:bg-slate-200 transition-colors">
-                Get Started
-              </button>
-              <a href="#how-it-works" className="flex items-center gap-2 px-8 py-4 rounded-xl bg-slate-800/50 border border-slate-700 hover:bg-slate-800 text-white text-base font-bold transition-all">
-                See How It Works
-              </a>
+              {!isAuthenticated ? (
+                <>
+                  <button onClick={() => onLogin('login')} className="flex items-center gap-2 px-8 py-4 rounded-xl bg-white text-[#060913] text-base font-bold hover:bg-slate-200 transition-colors shadow-lg shadow-white/10 hover:shadow-white/20">
+                    User Login
+                  </button>
+                  <button onClick={() => onLogin('admin')} className="flex items-center gap-2 px-8 py-4 rounded-xl bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 text-amber-400 text-base font-bold transition-all shadow-lg shadow-amber-500/5 hover:shadow-amber-500/10">
+                    Admin Login
+                  </button>
+                </>
+              ) : (
+                <button onClick={onGoToWorkspace} className="flex items-center gap-2 px-8 py-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white text-base font-bold transition-colors shadow-lg shadow-emerald-500/20">
+                  Open Agent Workspace
+                </button>
+              )}
             </motion.div>
           </motion.div>
 

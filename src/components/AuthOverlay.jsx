@@ -3,9 +3,9 @@ import { Bot, Zap, ArrowRight, ShieldCheck, Mail, Lock, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function AuthOverlay({ initialMode = 'login', onLogin, onClose }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoginMode, setIsLoginMode] = useState(initialMode === 'login');
+  const [email, setEmail] = useState(initialMode === 'admin' ? 'admin@razoragent.ai' : '');
+  const [password, setPassword] = useState(initialMode === 'admin' ? 'admin123' : '');
+  const [isLoginMode, setIsLoginMode] = useState(initialMode === 'login' || initialMode === 'admin');
   const [isHovered, setIsHovered] = useState(false);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);

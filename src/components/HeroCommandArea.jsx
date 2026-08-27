@@ -79,10 +79,7 @@ export default function HeroCommandArea({
         
         {/* HERO TITLE & SUBTITLE */}
         <div className="space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-400 text-xs font-semibold">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Autonomous Commerce Protocol</span>
-          </div>
+          
           <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight text-white font-heading">
             Let AI buy safely.
           </h2>
@@ -211,3 +208,4 @@ export default function HeroCommandArea({
     </section>
   );
 }
+

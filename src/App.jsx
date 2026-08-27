@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Header from './components/Header.jsx';
 import HeroCommandArea from './components/HeroCommandArea.jsx';
 import TransactionWorkflow from './components/TransactionWorkflow.jsx';
@@ -16,14 +16,38 @@ import UserProfileModal from './components/UserProfileModal.jsx';
 import MandateSetupModal from './components/MandateSetupModal.jsx';
 import TransactionHistoryModal from './components/TransactionHistoryModal.jsx';
 import { ShoppingCart, Bot, Zap, ArrowRight, ShieldCheck } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function App() {
+  const workflowRef = useRef(null);
+  const workspaceRef = useRef(null);
+
   // Auth State
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [currentView, setCurrentView] = useState(localStorage.getItem('razoragent_view') || 'landing');
+  const [showSplash, setShowSplash] = useState(currentView === 'landing');
+
+  // Splash Screen Duration (2 seconds horizontal loading only for landing page)
+  useEffect(() => {
+    if (currentView === 'landing') {
+      const timer = setTimeout(() => {
+        setShowSplash(false);
+      }, 2000);
+      return () => clearTimeout(timer);
+    } else {
+      setShowSplash(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('razoragent_view', currentView);
+  }, [currentView]);
 
   const [agentAuthorization, setAgentAuthorization] = useState(null);
   const [userEmail, setUserEmail] = useState('');
+  const [userRole, setUserRole] = useState('user');
   const [isMandateModalOpen, setIsMandateModalOpen] = useState(false);
 
   // Fetch Session on Mount
@@ -39,9 +63,16 @@ export default function App() {
           setIsAuthenticated(true);
           setAgentAuthorization(data.user.agentAuthorization);
           setUserEmail(data.user.email);
+          setUserRole(data.user.role || 'user');
         }
+        setIsInitializing(false);
       })
-      .catch(err => console.error("Session restore failed:", err));
+      .catch(err => {
+        console.error("Session restore failed:", err);
+        setIsInitializing(false);
+      });
+    } else {
+      setIsInitializing(false);
     }
   }, []);
 
@@ -81,6 +112,24 @@ export default function App() {
   const [isHumanGateModalOpen, setIsHumanGateModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+
+  // Scroll to workflow on execution start
+  useEffect(() => {
+    if (isProcessing && workflowRef.current) {
+      setTimeout(() => {
+        workflowRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    }
+  }, [isProcessing]);
+
+  // Scroll to workspace on product received
+  useEffect(() => {
+    if ((cart.length > 0 || policyStatus) && workspaceRef.current && !isProcessing) {
+      setTimeout(() => {
+        workspaceRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 300);
+    }
+  }, [cart, policyStatus, isProcessing]);
 
   // Helper to add telemetry logs
   const appendTelemetryLog = (event, details) => {
@@ -142,6 +191,9 @@ export default function App() {
         // Trigger Modal if blocked
         if (data.policyStatus === 'BLOCKED_REQUIRES_APPROVAL' || data.totalAmount > userBudget) {
           setIsHumanGateModalOpen(true);
+        } else if (data.policyStatus === 'APPROVED') {
+          // Guard passed successfully, move to Transact step
+          setTimeout(() => setCurrentStep(4), 800);
         }
       }
     } catch (error) {
@@ -166,8 +218,10 @@ export default function App() {
       
       if (newTotal > userBudget) {
         setPolicyStatus('BLOCKED_REQUIRES_APPROVAL');
+        setCurrentStep(3);
       } else {
         setPolicyStatus('APPROVED');
+        setCurrentStep(4);
       }
     } else {
       const newTotal = mainItem.price;
@@ -177,6 +231,7 @@ export default function App() {
       if (newTotal <= userBudget) {
         setPolicyStatus('APPROVED');
         setIsHumanGateModalOpen(false);
+        setCurrentStep(4);
       }
     }
   };
@@ -501,27 +556,91 @@ export default function App() {
 
   const handleLogout = () => {
     localStorage.removeItem('razoragent_token');
+    localStorage.removeItem('razoragent_view');
     setIsAuthenticated(false);
     setUserEmail('');
-    setIsAgentAuthorized(false);
+    setUserRole('user');
+    setAgentAuthorization(null);
     setCart([]);
     setCurrentStep(1);
+    setCurrentView('landing');
   };
 
-  if (!isAuthenticated) {
+  if (showSplash) {
+    return (
+      <div className="fixed inset-0 z-[9999] bg-[#060913] flex flex-col items-center justify-center pt-2 overflow-hidden">
+        <motion.div 
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1.2, opacity: 1 }}
+          transition={{ duration: 1.5, repeat: Infinity, repeatType: 'reverse', ease: "easeInOut" }}
+          className="absolute w-64 h-64 bg-sky-500/10 rounded-full blur-[80px]"
+        />
+        <motion.div 
+          initial={{ scale: 0.8, opacity: 0, y: 20 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          transition={{ type: 'spring', damping: 15, stiffness: 100, delay: 0.2 }}
+          className="relative z-10 w-36 h-36 mb-6"
+        >
+          <img src="public/images/RazorAgent_Logo.png" alt="RazorAgent" className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(14,165,233,0.5)]" />
+        </motion.div>
+        <motion.h1 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="relative z-10 text-3xl font-bold text-white font-heading tracking-tight"
+        >
+          RazorAgent
+        </motion.h1>
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
+          className="relative z-10 mt-8 flex flex-col items-center gap-3"
+        >
+          <div className="w-48 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+            <motion.div 
+              initial={{ width: 0 }}
+              animate={{ width: "100%" }}
+              transition={{ duration: 2, ease: "linear" }}
+              className="h-full bg-gradient-to-r from-sky-400 to-indigo-500 rounded-full shadow-[0_0_10px_rgba(56,189,248,0.5)]"
+            />
+          </div>
+          <p className="text-sky-300 font-semibold font-mono text-[10px] tracking-[0.2em] uppercase">
+            Initializing Protocol...
+          </p>
+        </motion.div>
+      </div>
+    );
+  }
+
+  if (isInitializing) {
+    return (
+      <div className="min-h-screen bg-[#060913] flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-2 border-slate-800 border-t-sky-500 animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (currentView === 'landing') {
     return (
       <>
-        <LandingPage onLogin={(mode) => {
-          setAuthMode(mode || 'login');
-          setIsAuthModalOpen(true);
-        }} />
+        <LandingPage 
+          isAuthenticated={isAuthenticated}
+          onGoToWorkspace={() => setCurrentView('workspace')}
+          onLogin={(mode) => {
+            setAuthMode(mode || 'login');
+            setIsAuthModalOpen(true);
+          }} 
+        />
         {isAuthModalOpen && (
           <AuthOverlay 
             initialMode={authMode}
             onLogin={(user) => {
               setIsAuthenticated(true);
               setIsAuthModalOpen(false);
+              setCurrentView('workspace');
               if (user && user.email) setUserEmail(user.email);
+              if (user && user.role) setUserRole(user.role);
               if (user && user.agentAuthorization !== undefined) setAgentAuthorization(user.agentAuthorization);
             }} 
             onClose={() => setIsAuthModalOpen(false)} 
@@ -543,9 +662,11 @@ export default function App() {
         agentAuthorization={agentAuthorization}
         onSetupAgentPayments={() => setIsMandateModalOpen(true)}
         userEmail={userEmail}
+        userRole={userRole}
         onLogout={handleLogout}
         onOpenProfile={() => setIsProfileModalOpen(true)}
         onOpenHistory={() => setIsHistoryModalOpen(true)}
+        onGoHome={() => setCurrentView('landing')}
       />
 
       {/* MAIN CONTENT WRAPPER (~1400px Max Width) */}
@@ -563,15 +684,17 @@ export default function App() {
             />
 
             {/* 2. TRANSACTION WORKFLOW STEPPER */}
-            <TransactionWorkflow
-              currentStep={currentStep}
-              policyStatus={policyStatus}
-              paymentStatus={paymentFailed ? 'FAILED' : paymentVerified ? 'SUCCESS' : 'PENDING'}
-            />
+            <div ref={workflowRef}>
+              <TransactionWorkflow
+                currentStep={currentStep}
+                policyStatus={policyStatus}
+                paymentStatus={paymentFailed ? 'FAILED' : paymentVerified ? 'SUCCESS' : 'PENDING'}
+              />
+            </div>
 
             {/* 3. ACTIVE TRANSACTION WORKSPACE */}
             {cart.length > 0 || policyStatus === 'UNCERTAIN' || policyStatus === 'BLOCKED_REQUIRES_APPROVAL' ? (
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              <div ref={workspaceRef} className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start scroll-mt-24">
                 
                 {/* LEFT / MAIN COLUMN: PRODUCTS & UPSELL */}
                 <div className={`${paymentVerified ? 'lg:col-span-12 max-w-4xl mx-auto w-full' : 'lg:col-span-7'} space-y-6`}>
@@ -657,20 +780,7 @@ export default function App() {
                   </div>
                 )}
               </div>
-            ) : (
-              /* EMPTY ACTIVE STATE HINT */
-              <div className="rounded-2xl bg-slate-900/40 border border-slate-800/80 p-8 text-center space-y-3">
-                <div className="w-12 h-12 rounded-full bg-slate-800/80 text-slate-400 flex items-center justify-center mx-auto">
-                  <Bot className="w-6 h-6" />
-                </div>
-                <h3 className="text-base font-bold text-white font-heading">
-                  Waiting for AI Commerce Execution
-                </h3>
-                <p className="text-xs text-slate-400 max-w-md mx-auto">
-                  Select an example prompt chip or enter a natural language command above to start the autonomous buyer agent workflow.
-                </p>
-              </div>
-            )}
+            ) : null}
 
           </>
       </main>
@@ -730,3 +840,4 @@ export default function App() {
     </div>
   );
 }
+
