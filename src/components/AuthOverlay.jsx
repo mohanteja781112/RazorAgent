@@ -66,18 +66,18 @@ export default function AuthOverlay({ initialMode = 'login', onLogin, onClose })
           </button>
 
           {/* Header Section */}
-        <div className="flex flex-col items-center text-center mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-sky-500 via-indigo-500 to-purple-600 p-0.5 flex items-center justify-center shadow-lg shadow-sky-500/30 mb-4">
-            <div className="w-full h-full bg-[#0b0f19] rounded-[14px] flex items-center justify-center">
-              <Zap className="w-7 h-7 text-sky-400 fill-sky-400/20" />
-            </div>
+        <div className="flex items-center justify-center gap-4 mb-8">
+          <div className="w-14 h-14 flex items-center justify-center shrink-0">
+            <img src="/images/RazorAgent_Logo.png" alt="RazorAgent Logo" className="w-full h-full object-contain" />
           </div>
-          <h2 className="text-2xl font-bold text-white font-heading tracking-tight">
-            {isLoginMode ? 'Welcome Back' : 'Create Account'}
-          </h2>
-          <p className="text-sm text-slate-400 mt-2">
-            {isLoginMode ? 'Log in to your RazorAgent dashboard.' : 'Sign up for a secure agent identity.'}
-          </p>
+          <div className="flex flex-col text-left">
+            <h2 className="text-2xl font-bold text-white font-heading tracking-tight">
+              {isLoginMode ? 'Welcome Back' : 'Create Account'}
+            </h2>
+            <p className="text-sm text-slate-400 mt-0.5">
+              {isLoginMode ? 'Log in to your RazorAgent dashboard.' : 'Sign up for a secure agent identity.'}
+            </p>
+          </div>
         </div>
 
         {error && (

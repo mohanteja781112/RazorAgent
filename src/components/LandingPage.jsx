@@ -97,77 +97,23 @@ export default function LandingPage({ onLogin, isAuthenticated, onGoToWorkspace 
             </motion.div>
           </motion.div>
 
-          {/* AI VISUALIZATION DEMO CARD */}
+          {/* HERO IMAGE */}
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="relative"
+            className="relative flex justify-center items-center"
           >
             {/* Decorative Glow */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-sky-500/20 to-purple-500/20 blur-2xl rounded-3xl"></div>
+            <div className="absolute inset-0 bg-gradient-to-tr from-sky-500/30 to-purple-500/30 blur-[100px] rounded-full"></div>
             
-            {/* Glass Card */}
-            <div className="relative bg-[#0b1021]/80 backdrop-blur-xl border border-slate-700/60 rounded-3xl p-8 shadow-2xl overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-sky-400 to-indigo-500"></div>
-              
-              {/* User Intent */}
-              <div className="flex gap-4 mb-8">
-                <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center shrink-0">
-                  <div className="w-2 h-2 rounded-full bg-emerald-400"></div>
-                </div>
-                <div className="bg-slate-800/80 rounded-2xl rounded-tl-none p-4 border border-slate-700/50">
-                  <p className="text-sm text-slate-200">"Find me the best mechanical keyboard under ₹4,000."</p>
-                </div>
-              </div>
-
-              {/* Agent Workflow Sequence */}
-              <div className="space-y-4 pl-4 border-l-2 border-slate-800 ml-4 relative">
-                
-                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 1.2 }} className="flex items-center gap-3">
-                  <div className="absolute -left-[9px] w-4 h-4 rounded-full bg-[#0b1021] border-2 border-sky-400 flex items-center justify-center">
-                    <div className="w-1.5 h-1.5 bg-sky-400 rounded-full animate-pulse"></div>
-                  </div>
-                  <span className="text-xs font-mono text-sky-400 bg-sky-900/30 px-2 py-1 rounded">01_SEARCH</span>
-                  <span className="text-sm text-slate-400">Parsing catalog for matches...</span>
-                </motion.div>
-
-                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 1.8 }} className="flex items-center gap-3">
-                  <div className="absolute -left-[9px] w-4 h-4 rounded-full bg-[#0b1021] border-2 border-indigo-400"></div>
-                  <span className="text-xs font-mono text-indigo-400 bg-indigo-900/30 px-2 py-1 rounded">02_UPSELL</span>
-                  <span className="text-sm text-slate-400">Bundling Ergonomic Wrist Rest (+₹500)</span>
-                </motion.div>
-
-                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 2.4 }} className="flex items-center gap-3">
-                  <div className="absolute -left-[9px] w-4 h-4 rounded-full bg-[#0b1021] border-2 border-purple-400"></div>
-                  <span className="text-xs font-mono text-purple-400 bg-purple-900/30 px-2 py-1 rounded">03_POLICY</span>
-                  <span className="text-sm text-slate-400">Budget Guardrail: ₹3,700 {'<'} ₹4,000</span>
-                </motion.div>
-
-              </div>
-
-              {/* Final Result Card */}
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }} 
-                animate={{ opacity: 1, y: 0 }} 
-                transition={{ delay: 3.2 }}
-                className="mt-8 bg-[#131b2e] border border-emerald-500/30 rounded-2xl p-5"
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h4 className="text-white font-bold text-lg">Cart Approved</h4>
-                    <p className="text-xs text-emerald-400 mt-1">Autonomous Policy Validated</p>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-2xl font-bold text-white font-mono">₹3,700</span>
-                  </div>
-                </div>
-                <button onClick={onLogin} className="w-full py-3 bg-sky-500 hover:bg-sky-400 text-white rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2 shadow-lg shadow-sky-500/20">
-                  <ShieldCheck className="w-4 h-4" /> Proceed to Secure Checkout
-                </button>
-              </motion.div>
-
-            </div>
+            <motion.img 
+              src="/images/RazorAgent_Homepage_Image.png" 
+              alt="RazorAgent Autonomous Commerce" 
+              className="relative z-10 w-full max-w-xl object-contain drop-shadow-2xl"
+              animate={{ y: [0, -15, 0] }}
+              transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
+            />
           </motion.div>
         </div>
       </section>
