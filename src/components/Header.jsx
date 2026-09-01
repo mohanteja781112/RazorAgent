@@ -103,7 +103,7 @@ export default function Header({
           ) : (
             <button
               onClick={onSetupAgentPayments}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-md shadow-purple-500/20 transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-500 hover:to-blue-500 text-white shadow-md shadow-blue-500/20 transition-all"
             >
               <Zap className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Set Up Agent Payments</span>
@@ -114,7 +114,7 @@ export default function Header({
           <div className="relative flex items-center pl-3 ml-1 border-l border-slate-700/60">
             <button 
               onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-              className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 border border-indigo-400/50 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-indigo-500/20 hover:scale-105 transition-transform"
+              className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 border border-blue-400/50 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-blue-500/20 hover:scale-105 transition-transform"
               title={userEmail || 'Demo User'}
             >
               {userEmail ? userEmail.charAt(0).toUpperCase() : 'DU'}

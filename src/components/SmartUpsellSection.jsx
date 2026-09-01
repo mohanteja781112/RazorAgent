@@ -15,16 +15,16 @@ export default function SmartUpsellSection({
   const exceedsBudget = upsellItem?.exceeds_budget;
 
   return (
-    <div className="relative rounded-2xl bg-gradient-to-r from-indigo-950/40 via-purple-950/30 to-[#111827] border border-indigo-500/30 p-5 shadow-xl transition-all">
+    <div className="relative rounded-2xl bg-gradient-to-r from-blue-950/40 via-blue-950/30 to-[#111827] border border-blue-500/30 p-5 shadow-xl transition-all">
       
       {/* HEADER BADGE */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <div className={`p-1.5 rounded-lg ${exceedsBudget ? 'bg-amber-500/20 text-amber-300' : 'bg-purple-500/20 text-purple-300'}`}>
+          <div className={`p-1.5 rounded-lg ${exceedsBudget ? 'bg-amber-500/20 text-amber-300' : 'bg-blue-500/20 text-blue-300'}`}>
             {exceedsBudget ? <Sparkles className="w-4 h-4" /> : <Gift className="w-4 h-4" />}
           </div>
           <div>
-            <h4 className={`text-xs font-bold uppercase tracking-wider font-heading ${exceedsBudget ? 'text-amber-300' : 'text-purple-300'}`}>
+            <h4 className={`text-xs font-bold uppercase tracking-wider font-heading ${exceedsBudget ? 'text-amber-300' : 'text-blue-300'}`}>
               {exceedsBudget ? 'Recommended Upgrade' : 'Smart Recommendation'}
             </h4>
             <p className="text-xs text-slate-400 font-medium">
@@ -34,7 +34,7 @@ export default function SmartUpsellSection({
         </div>
 
         {!exceedsBudget && (
-          <span className="text-[10px] font-bold tracking-wide uppercase px-2.5 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+          <span className="text-[10px] font-bold tracking-wide uppercase px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
             Bundle Savings: ₹{normalPrice - bundlePrice}
           </span>
         )}
@@ -69,7 +69,7 @@ export default function SmartUpsellSection({
               </p>
             )}
             <div className="flex items-center gap-2 pt-0.5">
-              <span className="text-sm font-extrabold text-purple-300">
+              <span className="text-sm font-extrabold text-blue-300">
                 ₹{bundlePrice.toLocaleString('en-IN')}
               </span>
               <span className="text-xs text-slate-500 line-through">
@@ -86,7 +86,7 @@ export default function SmartUpsellSection({
               <span className="text-slate-400 truncate max-w-[120px]">{mainProductName}:</span>
               <span>₹{mainProductPrice.toLocaleString('en-IN')}</span>
             </div>
-            <div className="flex justify-between text-purple-300">
+            <div className="flex justify-between text-blue-300">
               <span className="truncate max-w-[120px]">+ {upsellItem?.product || 'Add-on'}:</span>
               <span>₹{isIncluded ? bundlePrice.toLocaleString('en-IN') : 0}</span>
             </div>
@@ -113,7 +113,7 @@ export default function SmartUpsellSection({
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-xs shadow-md transition-all ${
                   exceedsBudget 
                     ? 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950'
-                    : 'bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white'
+                    : 'bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white'
                 }`}
               >
                 {exceedsBudget ? (

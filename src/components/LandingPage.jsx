@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Zap, Bot, ShieldCheck, CreditCard, ArrowRight, Sparkles, MessageSquareCode, ShoppingCart } from 'lucide-react';
+import { Zap, Bot, ShieldCheck, CreditCard, ArrowRight, Sparkles, MessageSquareCode, ShoppingCart, Terminal, Activity, CheckCircle2, ChevronRight } from 'lucide-react';
 
 export default function LandingPage({ onLogin, isAuthenticated, onGoToWorkspace }) {
   // Animation Variants
@@ -23,8 +23,8 @@ export default function LandingPage({ onLogin, isAuthenticated, onGoToWorkspace 
       {/* --- BACKGROUND EFFECTS --- */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-sky-600/10 rounded-full blur-[150px]"></div>
-        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-indigo-600/10 rounded-full blur-[150px]"></div>
-        <div className="absolute top-[40%] left-[60%] w-[30%] h-[30%] bg-purple-600/10 rounded-full blur-[120px]"></div>
+        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-600/10 rounded-full blur-[150px]"></div>
+        <div className="absolute top-[40%] left-[60%] w-[30%] h-[30%] bg-blue-600/10 rounded-full blur-[120px]"></div>
       </div>
 
       {/* --- NAVBAR --- */}
@@ -40,18 +40,17 @@ export default function LandingPage({ onLogin, isAuthenticated, onGoToWorkspace 
           </div>
           
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
-            <a href="#how-it-works" className="hover:text-white transition-colors">How It Works</a>
             <a href="#security" className="hover:text-white transition-colors">Architecture</a>
             <a href="#features" className="hover:text-white transition-colors">Features</a>
           </div>
 
           <div className="flex items-center gap-4">
             {!isAuthenticated ? (
-              <button onClick={() => onLogin('signup')} className="hidden sm:flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 text-white text-sm font-bold shadow-lg shadow-sky-500/25 hover:shadow-sky-500/40 hover:-translate-y-0.5 transition-all">
+              <button onClick={() => onLogin('signup')} className="hidden sm:flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 text-white text-sm font-bold shadow-lg shadow-sky-500/25 hover:shadow-sky-500/40 hover:-translate-y-0.5 transition-all">
                 Launch Agent <ArrowRight className="w-4 h-4" />
               </button>
             ) : (
-              <button onClick={onGoToWorkspace} className="hidden sm:flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-sm font-bold shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:-translate-y-0.5 transition-all">
+              <button onClick={onGoToWorkspace} className="hidden sm:flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-[#1687E8] text-white text-sm font-bold shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:-translate-y-0.5 transition-all">
                 Enter Workspace <ArrowRight className="w-4 h-4" />
               </button>
             )}
@@ -60,37 +59,99 @@ export default function LandingPage({ onLogin, isAuthenticated, onGoToWorkspace 
       </nav>
 
       {/* --- HERO SECTION --- */}
-      <section className="relative z-10 pt-24 pb-32 px-6 max-w-7xl mx-auto">
+      <section className="relative z-10 min-h-[calc(100vh-80px)] flex items-center py-12 px-6 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           
-          <motion.div initial="hidden" animate="visible" variants={staggerContainer} className="space-y-8">
-            <motion.div variants={fadeUp} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/50 border border-slate-700/50 text-sky-400 text-xs font-semibold tracking-wide uppercase">
-              <Sparkles className="w-3.5 h-3.5" /> Razorpay Buildathon 2026
-            </motion.div>
+          <motion.div initial="hidden" animate="visible" variants={staggerContainer} className="space-y-7 lg:pr-8 xl:pr-12">
             
-            <motion.h1 variants={fadeUp} className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-tight font-heading">
-              Autonomous <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-indigo-400 to-purple-400">
-                AI Commerce.
-              </span>
+            {/* 1. SMALL TECHNICAL EYEBROW (REMOVED) */}
+            
+            {/* 2. HERO HEADLINE */}
+            <motion.h1 variants={fadeUp} className="text-4xl md:text-5xl lg:text-[56px] font-extrabold tracking-tight text-white leading-[1.1] font-heading">
+              YOUR INTENT.<br/>
+              OUR <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00B8F5] to-[#1687E8]">AUTONOMY.</span>
             </motion.h1>
             
-            <motion.p variants={fadeUp} className="text-lg text-slate-400 leading-relaxed max-w-xl">
-              Tell RazorAgent what you need. It searches the catalog, builds your cart, enforces your financial policy, and prepares a completely secure Razorpay checkout.
+            {/* 3. SUPPORTING COPY */}
+            <motion.p variants={fadeUp} className="text-[17px] text-[#9AAAC0] leading-relaxed max-w-lg opacity-90">
+              Give RazorAgent an objective. It finds the right products, applies your spending mandate, and prepares a secure checkout.
             </motion.p>
             
-            <motion.div variants={fadeUp} className="flex flex-wrap items-center gap-4 pt-4">
+            {/* 4. CENTRAL COMMAND INTERFACE */}
+            <motion.div variants={fadeUp} className="group relative w-full lg:w-[90%] xl:w-[85%] rounded-2xl bg-[#0D1728]/80 backdrop-blur-xl border border-[#3399CC]/30 overflow-hidden shadow-2xl transition-all duration-300 hover:border-[#00B8F5]/60 hover:shadow-[0_0_30px_rgba(0,184,245,0.15)]">
+              {/* Subtle top glare */}
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#00B8F5]/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              
+              <div className="p-5 border-b border-[#101B2D]">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2 text-[#9AAAC0] text-[10px] font-mono tracking-widest uppercase">
+                    <Terminal className="w-3.5 h-3.5" />
+                    Agent Command
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[10px] font-mono text-[#00B8F5]">
+                    <span className="w-1 h-1 rounded-full bg-[#00B8F5] animate-pulse"></span>
+                    READY
+                  </div>
+                </div>
+                <p className="text-[#F5F8FC] font-medium text-[16px] md:text-[17px] leading-snug">
+                  "Find me the best mechanical keyboard under ₹4,000"
+                </p>
+              </div>
+
+              <div className="p-4 bg-[#070D17]/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[#9AAAC0] text-[10px] font-mono uppercase tracking-wider">Autonomous Spend Limit</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-white font-semibold text-sm">₹5,000</span>
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-[#00C896]/10 text-[#00C896] border border-[#00C896]/20">Active</span>
+                  </div>
+                </div>
+                {!isAuthenticated ? (
+                  <button 
+                    onClick={() => onLogin('signup')}
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#1687E8] to-[#00B8F5] text-white text-[13px] font-bold shadow-lg shadow-[#00B8F5]/25 hover:shadow-[#00B8F5]/40 hover:-translate-y-0.5 transition-all"
+                  >
+                    Launch Agent <ChevronRight className="w-4 h-4" />
+                  </button>
+                ) : (
+                  <button 
+                    onClick={onGoToWorkspace}
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-[#1687E8] text-white text-[13px] font-bold shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:-translate-y-0.5 transition-all"
+                  >
+                    Enter Workspace <ChevronRight className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+
+              {/* 5. LIVE AGENT STATE (Embedded at bottom of panel) */}
+              <div className="px-4 py-2.5 bg-[#0D1728] border-t border-[#101B2D] flex items-center justify-between overflow-hidden">
+                {['Understand', 'Decide', 'Guard', 'Transact'].map((step, i) => (
+                  <div key={step} className="flex items-center gap-1.5">
+                    <div className={`w-1.5 h-1.5 rounded-full ${i === 0 ? 'bg-[#00B8F5]' : 'bg-[#101B2D] border border-[#3399CC]/30'}`}></div>
+                    <span className={`text-[9px] font-mono uppercase tracking-widest ${i === 0 ? 'text-[#00B8F5]' : 'text-[#9AAAC0]/50'}`}>
+                      {step}
+                    </span>
+                    {i < 3 && <div className="w-3 md:w-6 h-px bg-[#101B2D]"></div>}
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* 6. BOUNDED AUTONOMY / TRUST PANEL (REMOVED) */}
+
+            {/* 7. LOGIN ACTIONS */}
+            <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-start sm:items-center gap-6 pt-4">
               {!isAuthenticated ? (
                 <>
-                  <button onClick={() => onLogin('login')} className="flex items-center gap-2 px-8 py-4 rounded-xl bg-white text-[#060913] text-base font-bold hover:bg-slate-200 transition-colors shadow-lg shadow-white/10 hover:shadow-white/20">
-                    User Login
+                  <button onClick={() => onLogin('login')} className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white text-[#070D17] text-sm font-bold hover:bg-slate-200 transition-colors shadow-lg shadow-white/10 hover:shadow-white/20">
+                    Continue as User
                   </button>
-                  <button onClick={() => onLogin('admin')} className="flex items-center gap-2 px-8 py-4 rounded-xl bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 text-amber-400 text-base font-bold transition-all shadow-lg shadow-amber-500/5 hover:shadow-amber-500/10">
-                    Admin Login
+                  <button onClick={() => onLogin('admin')} className="text-[13px] font-semibold text-[#9AAAC0] hover:text-[#F5B62E] transition-colors flex items-center gap-1 group">
+                    Admin access <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
                   </button>
                 </>
               ) : (
-                <button onClick={onGoToWorkspace} className="flex items-center gap-2 px-8 py-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white text-base font-bold transition-colors shadow-lg shadow-emerald-500/20">
+                <button onClick={onGoToWorkspace} className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-[#1687E8] text-white text-sm font-bold transition-all shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 hover:-translate-y-0.5">
                   Open Agent Workspace
                 </button>
               )}
@@ -105,7 +166,7 @@ export default function LandingPage({ onLogin, isAuthenticated, onGoToWorkspace 
             className="relative flex justify-center items-center"
           >
             {/* Decorative Glow */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-sky-500/30 to-purple-500/30 blur-[100px] rounded-full"></div>
+            <div className="absolute inset-0 bg-gradient-to-tr from-sky-500/30 to-blue-500/30 blur-[100px] rounded-full"></div>
             
             <motion.img 
               src="/images/RazorAgent_Homepage_Image.png" 
@@ -149,10 +210,10 @@ export default function LandingPage({ onLogin, isAuthenticated, onGoToWorkspace 
             </motion.div>
 
             {/* Layer 2 */}
-            <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="bg-[#0b1021] border border-slate-800 rounded-3xl p-8 hover:border-indigo-500/50 transition-colors group relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-6 text-7xl font-bold text-slate-800/30 group-hover:text-indigo-900/20 transition-colors pointer-events-none">02</div>
-              <div className="w-14 h-14 bg-indigo-500/10 rounded-2xl flex items-center justify-center mb-6 border border-indigo-500/20">
-                <MessageSquareCode className="w-6 h-6 text-indigo-400" />
+            <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="bg-[#0b1021] border border-slate-800 rounded-3xl p-8 hover:border-blue-500/50 transition-colors group relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-6 text-7xl font-bold text-slate-800/30 group-hover:text-blue-900/20 transition-colors pointer-events-none">02</div>
+              <div className="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-6 border border-blue-500/20">
+                <MessageSquareCode className="w-6 h-6 text-blue-400" />
               </div>
               <h3 className="text-xl font-bold text-white mb-3 text-left">The Policy Engine</h3>
               <p className="text-slate-400 text-sm text-left leading-relaxed">
@@ -161,10 +222,10 @@ export default function LandingPage({ onLogin, isAuthenticated, onGoToWorkspace 
             </motion.div>
 
             {/* Layer 3 */}
-            <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.4 }} className="bg-[#0b1021] border border-slate-800 rounded-3xl p-8 hover:border-purple-500/50 transition-colors group relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-6 text-7xl font-bold text-slate-800/30 group-hover:text-purple-900/20 transition-colors pointer-events-none">03</div>
-              <div className="w-14 h-14 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-6 border border-purple-500/20">
-                <CreditCard className="w-6 h-6 text-purple-400" />
+            <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.4 }} className="bg-[#0b1021] border border-slate-800 rounded-3xl p-8 hover:border-blue-500/50 transition-colors group relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-6 text-7xl font-bold text-slate-800/30 group-hover:text-blue-900/20 transition-colors pointer-events-none">03</div>
+              <div className="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-6 border border-blue-500/20">
+                <CreditCard className="w-6 h-6 text-blue-400" />
               </div>
               <h3 className="text-xl font-bold text-white mb-3 text-left">Razorpay Network</h3>
               <p className="text-slate-400 text-sm text-left leading-relaxed">

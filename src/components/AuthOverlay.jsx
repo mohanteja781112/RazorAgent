@@ -48,7 +48,7 @@ export default function AuthOverlay({ initialMode = 'login', onLogin, onClose })
       >
         {/* Background Decorative Elements */}
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-sky-500/20 rounded-full blur-[120px] pointer-events-none"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-[120px] pointer-events-none"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-[120px] pointer-events-none"></div>
 
         <motion.div 
           initial={{ scale: 0.95, opacity: 0, y: 20 }}
@@ -126,7 +126,7 @@ export default function AuthOverlay({ initialMode = 'login', onLogin, onClose })
             type="submit"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            className="group relative w-full flex items-center justify-center gap-2 py-3 mt-2 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-semibold rounded-xl shadow-lg shadow-sky-500/25 transition-all overflow-hidden"
+            className="group relative w-full flex items-center justify-center gap-2 py-3 mt-2 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-semibold rounded-xl shadow-lg shadow-sky-500/25 transition-all overflow-hidden"
           >
             <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
             <span className="relative z-10 flex items-center gap-2">

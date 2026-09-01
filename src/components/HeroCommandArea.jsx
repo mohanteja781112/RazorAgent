@@ -73,7 +73,7 @@ export default function HeroCommandArea({
     <section className="relative overflow-hidden rounded-2xl bg-gradient-to-b from-[#11192e] via-[#0f172a] to-[#0d1322] border border-slate-800/90 shadow-2xl p-6 md:p-8">
       {/* Background Decorative Glow */}
       <div className="absolute -top-24 -right-24 w-96 h-96 bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative z-10 max-w-4xl mx-auto text-center space-y-6">
         
@@ -85,7 +85,7 @@ export default function HeroCommandArea({
           </h2>
           <p className="text-sm md:text-base text-slate-400 font-medium tracking-wide">
             <span className="text-sky-400 font-semibold">Understand.</span>{' '}
-            <span className="text-indigo-400 font-semibold">Decide.</span>{' '}
+            <span className="text-blue-400 font-semibold">Decide.</span>{' '}
             <span className="text-amber-400 font-semibold">Guard.</span>{' '}
             <span className="text-emerald-400 font-semibold">Transact.</span>
           </p>
@@ -123,7 +123,7 @@ export default function HeroCommandArea({
               <button
                 onClick={() => onExecute()}
                 disabled={isProcessing || !promptInput.trim()}
-                className="flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-semibold text-sm shadow-lg shadow-sky-500/25 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-sky-500 via-blue-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-semibold text-sm shadow-lg shadow-sky-500/25 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 {isProcessing ? (
                   <>
@@ -183,15 +183,15 @@ export default function HeroCommandArea({
             onClick={() => handlePresetClick('Buy me a wireless gaming mouse under ₹3,000')}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/60 hover:bg-sky-500/10 text-slate-300 hover:text-sky-300 border border-slate-700/60 hover:border-sky-500/40 transition-all"
           >
-            <Mouse className="w-3 h-3 text-indigo-400" />
+            <Mouse className="w-3 h-3 text-blue-400" />
             <span>Gaming mouse under ₹3,000</span>
           </button>
 
           <button
             onClick={() => handlePresetClick('Find me a mechanical keyboard with wrist rest accessory bundle')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/60 hover:bg-purple-500/10 text-slate-300 hover:text-purple-300 border border-slate-700/60 hover:border-purple-500/40 transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/60 hover:bg-blue-500/10 text-slate-300 hover:text-blue-300 border border-slate-700/60 hover:border-blue-500/40 transition-all"
           >
-            <Package className="w-3 h-3 text-purple-400" />
+            <Package className="w-3 h-3 text-blue-400" />
             <span>Keyboard + bundle</span>
           </button>
 

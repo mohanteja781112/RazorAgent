@@ -27,7 +27,7 @@ export default function UserProfileModal({ isOpen, onClose, userEmail, agentAuth
           </button>
 
           <div className="flex flex-col items-center text-center mb-6">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 border-2 border-indigo-400/50 flex items-center justify-center text-white font-bold text-2xl shadow-lg shadow-indigo-500/20 mb-4">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 border-2 border-blue-400/50 flex items-center justify-center text-white font-bold text-2xl shadow-lg shadow-blue-500/20 mb-4">
               {userEmail ? userEmail.charAt(0).toUpperCase() : 'U'}
             </div>
             <h2 className="text-xl font-bold text-white tracking-tight">User Profile</h2>
@@ -54,7 +54,7 @@ export default function UserProfileModal({ isOpen, onClose, userEmail, agentAuth
             <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4 flex flex-col gap-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400">
+                  <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400">
                     <Zap className="w-5 h-5" />
                   </div>
                   <div>

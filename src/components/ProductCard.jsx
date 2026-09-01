@@ -25,7 +25,7 @@ export default function ProductCard({ item }) {
       
       {/* AI MATCH BADGE */}
       <div className="flex items-center justify-between gap-2 mb-4">
-        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-sky-500/20 to-indigo-500/20 border border-sky-500/30 text-sky-300 text-xs font-semibold">
+        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-sky-500/20 to-blue-500/20 border border-sky-500/30 text-sky-300 text-xs font-semibold">
           <Sparkles className="w-3.5 h-3.5 text-sky-400" />
           <span>AI Selected</span>
         </div>

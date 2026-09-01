@@ -37,7 +37,7 @@ export default function RazorAgentSplash() {
             initial={{ width: 0 }}
             animate={{ width: "100%" }}
             transition={{ duration: 2, ease: "linear" }}
-            className="h-full bg-gradient-to-r from-sky-400 to-indigo-500 rounded-full shadow-[0_0_10px_rgba(56,189,248,0.5)]"
+            className="h-full bg-gradient-to-r from-sky-400 to-blue-500 rounded-full shadow-[0_0_10px_rgba(56,189,248,0.5)]"
           />
         </div>
         <p className="text-sky-300 font-semibold font-mono text-[10px] tracking-[0.2em] uppercase">

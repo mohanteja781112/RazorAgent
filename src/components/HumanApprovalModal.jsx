@@ -56,7 +56,7 @@ export default function HumanApprovalModal({
               <span>Selected Product (Keyboard):</span>
               <span>₹3,499</span>
             </div>
-            <div className="flex justify-between text-purple-300">
+            <div className="flex justify-between text-blue-300">
               <span>Merchant Bundle (Wrist Rest):</span>
               <span>+₹299</span>
             </div>

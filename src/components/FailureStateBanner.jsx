@@ -78,7 +78,7 @@ export default function FailureStateBanner({
         <div className="flex items-center gap-3">
           <button
             onClick={onRetry}
-            className="flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-bold text-xs shadow-lg transition-all"
+            className="flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold text-xs shadow-lg transition-all"
           >
             <RotateCcw className="w-4 h-4" />
             <span>Retry Payment Safely</span>
