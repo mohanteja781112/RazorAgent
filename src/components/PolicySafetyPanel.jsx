@@ -126,7 +126,7 @@ export default function PolicySafetyPanel({
             className="w-full flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold text-sm shadow-lg shadow-amber-500/20 transition-all cursor-pointer"
           >
             <UserCheck className="w-4 h-4 stroke-[2.5]" />
-            <span>Approve & Authorize Transaction</span>
+            <span>Continue & Pay ₹{totalAmount.toLocaleString('en-IN')}</span>
             <ArrowRight className="w-4 h-4 stroke-[2.5]" />
           </button>
         ) : policyStatus === 'UNCERTAIN' ? (
@@ -150,7 +150,7 @@ export default function PolicySafetyPanel({
                   <Zap className="w-4 h-4 stroke-[2.5]" />
                 )}
                 <span>
-                  {isProcessingPayment ? 'Processing Auto-Pay...' : `Auto-Pay via Authorized Agent (₹${totalAmount.toLocaleString('en-IN')})`}
+                  {isProcessingPayment ? 'Processing Auto-Pay...' : `Continue & Pay ₹${totalAmount.toLocaleString('en-IN')}`}
                 </span>
                 {!isProcessingPayment && <ArrowRight className="w-4 h-4 stroke-[2.5]" />}
               </>

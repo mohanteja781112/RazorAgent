@@ -91,12 +91,8 @@ export function useAgentCommerce({ userEmail, agentAuthorization, setAgentAuthor
 
         setCurrentStep(3); // Step 03: GUARD
 
-        // Trigger Modal if blocked
-        if (data.policyStatus === 'BLOCKED_REQUIRES_APPROVAL' || data.totalAmount > userBudget) {
-          setIsHumanGateModalOpen(true);
-        } else if (data.policyStatus === 'APPROVED') {
-          setTimeout(() => setCurrentStep(4), 800);
-        }
+        // We intentionally do not auto-open the modal or auto-progress to step 4.
+        // The user must manually click "Continue & Pay" to confirm they are happy with the product.
       }
     } catch (error) {
       appendTelemetryLog('ERROR', `Agent interaction failed: ${error.message}`);
@@ -123,7 +119,7 @@ export function useAgentCommerce({ userEmail, agentAuthorization, setAgentAuthor
         setCurrentStep(3);
       } else {
         setPolicyStatus('APPROVED');
-        setCurrentStep(4);
+        setCurrentStep(3); // User must still manually click continue
       }
     } else {
       const newTotal = mainItem.price;
@@ -133,7 +129,7 @@ export function useAgentCommerce({ userEmail, agentAuthorization, setAgentAuthor
       if (newTotal <= userBudget) {
         setPolicyStatus('APPROVED');
         setIsHumanGateModalOpen(false);
-        setCurrentStep(4);
+        setCurrentStep(3); // User must still manually click continue
       }
     }
   };

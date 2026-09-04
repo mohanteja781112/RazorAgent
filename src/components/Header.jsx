@@ -115,15 +115,15 @@ export default function Header({
             <button 
               onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
               className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 border border-blue-400/50 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-blue-500/20 hover:scale-105 transition-transform"
-              title={userEmail || 'Demo User'}
+              title={userEmail || 'User'}
             >
-              {userEmail ? userEmail.charAt(0).toUpperCase() : 'DU'}
+              {userEmail ? userEmail.charAt(0).toUpperCase() : <User className="w-4 h-4" />}
             </button>
 
             {isProfileDropdownOpen && (
               <div className="absolute right-0 top-full mt-2 w-48 bg-[#131b2e] border border-slate-700/60 rounded-xl shadow-xl py-1 z-50">
                 <div className="px-4 py-2 border-b border-slate-700/60 mb-1">
-                  <p className="text-xs text-slate-400 truncate">{userEmail || 'demo@razorpay.com'}</p>
+                  <p className="text-xs text-slate-400 truncate">{userEmail || 'User'}</p>
                 </div>
                 <button
                   onClick={() => {

@@ -130,5 +130,29 @@
     "quality": "Medium",
     "specs": { "size": "Small", "type": "Demo" },
     "delivery_days": 1
+  },
+  {
+    "product_id": "phone_flagship_01",
+    "product": "Galaxy S24 Ultra 5G",
+    "category": "Electronics",
+    "price": 129999,
+    "currency": "INR",
+    "stock": 15,
+    "rating": 4.9,
+    "quality": "High",
+    "specs": { "storage": "512GB", "color": "Titanium Black", "ram": "12GB" },
+    "delivery_days": 2
+  },
+  {
+    "product_id": "phone_case_01",
+    "product": "Rugged Armor Phone Case",
+    "category": "Accessories",
+    "price": 999,
+    "currency": "INR",
+    "stock": 50,
+    "rating": 4.6,
+    "quality": "High",
+    "specs": { "material": "TPU + PC", "compatibility": "Galaxy S24 Ultra" },
+    "delivery_days": 1
   }
 ]

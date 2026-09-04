@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const crypto = require('crypto');
 const Razorpay = require('razorpay');
-const { ChatGoogleGenerativeAI } = require("@langchain/google-genai");
+const { ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings } = require("@langchain/google-genai");
 const { z } = require("zod");
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
@@ -203,11 +203,33 @@ app.post('/api/agent-payment/verify', authenticateToken, async (req, res) => {
     }
 
     if (isVerified) {
-      const user = await User.findByIdAndUpdate(req.user.id, {
+      let token_id = null;
+      
+      // If it's a real Razorpay payment, fetch the payment details immediately to grab the token.
+      // This bypasses the need for the webhook in local testing!
+      if (razorpay_payment_id && !razorpay_order_id?.startsWith('order_mock_') && typeof razorpay !== 'undefined') {
+        try {
+          const paymentDetails = await razorpay.payments.fetch(razorpay_payment_id);
+          if (paymentDetails && paymentDetails.token_id) {
+            token_id = paymentDetails.token_id;
+            console.log(`✅ Synchronously fetched TokenHQ token ${token_id} from Razorpay API`);
+          }
+        } catch (e) {
+          console.error("⚠️ Failed to fetch payment details synchronously:", e.message);
+        }
+      }
+
+      const updateData = {
         'agentAuthorization.status': 'active',
         'agentAuthorization.authorization_reference': razorpay_payment_id,
         'agentAuthorization.updated_at': new Date()
-      }, { new: true });
+      };
+      
+      if (token_id) {
+        updateData['agentAuthorization.razorpay_token_id'] = token_id;
+      }
+
+      const user = await User.findByIdAndUpdate(req.user.id, updateData, { new: true });
 
       res.json({ success: true, agentAuthorization: user.agentAuthorization });
     } else {
@@ -319,6 +341,60 @@ app.get('/api/v1/agent-catalog', (req, res) => {
 });
 
 // -------------------------------------------------------------
+// 1.5 RAG SYSTEM: VECTOR EMBEDDINGS & SIMILARITY SEARCH
+// -------------------------------------------------------------
+const embeddings = new GoogleGenerativeAIEmbeddings({
+  modelName: "text-embedding-004",
+  apiKey: process.env.GEMINI_API_KEY || "dummy",
+});
+
+let catalogWithEmbeddings = [];
+
+// Cosine similarity utility
+const cosineSimilarity = (vecA, vecB) => {
+  let dotProduct = 0;
+  let normA = 0;
+  let normB = 0;
+  for (let i = 0; i < vecA.length; i++) {
+    dotProduct += vecA[i] * vecB[i];
+    normA += vecA[i] * vecA[i];
+    normB += vecB[i] * vecB[i];
+  }
+  if (normA === 0 || normB === 0) return 0;
+  return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+};
+
+// Initialize embeddings on startup
+const initializeEmbeddings = async () => {
+  if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === 'YOUR_GEMINI_KEY_HERE') {
+    console.warn("⚠️ No GEMINI_API_KEY found, skipping catalog embeddings generation.");
+    return;
+  }
+  
+  console.log("🔄 Generating embeddings for product catalog...");
+  try {
+    const textsToEmbed = MERCHANT_CATALOG.map(p => 
+      `${p.product} ${p.category} ${Object.values(p.specs).join(" ")}`
+    );
+    
+    // Embed all documents
+    const docEmbeddings = await embeddings.embedDocuments(textsToEmbed);
+    
+    catalogWithEmbeddings = MERCHANT_CATALOG.map((product, index) => ({
+      ...product,
+      vector: docEmbeddings[index]
+    }));
+    
+    console.log(`✅ Successfully embedded ${catalogWithEmbeddings.length} products for RAG.`);
+  } catch (error) {
+    console.error("❌ Failed to generate catalog embeddings:", error.message);
+  }
+};
+// Trigger initialization
+initializeEmbeddings();
+
+
+// -------------------------------------------------------------
 // 2. DETERMINISTIC POLICY ENGINE & LANGCHAIN AGENT ROUTER
 // -------------------------------------------------------------
 const POLICY_RULES = {
@@ -395,14 +471,46 @@ app.post('/api/agent/interact', async (req, res) => {
     if (hasGemini || hasOpenAI) {
       // Apply structured output to the base model instead of the RunnableWithFallbacks wrapper
       const structuredLlm = geminiFlash.withStructuredOutput(searchSchema);
-      const catalogSummary = MERCHANT_CATALOG.map(p => `- ID: ${p.product_id} | Name: ${p.product} | Price: ₹${p.price} | Category: ${p.category} | Specs: ${JSON.stringify(p.specs)}`).join('\n');
+      
+      // RAG Retrieval
+      let retrievedCatalog = MERCHANT_CATALOG;
+      
+      if (catalogWithEmbeddings.length > 0) {
+        addLog('RAG_SEARCH', `Embedding user prompt and performing vector search...`);
+        try {
+          // Workaround for @langchain/google-genai embedQuery bug with text-embedding-004
+          const promptEmbedding = (await embeddings.embedDocuments([prompt]))[0];
+          
+          // Calculate similarities
+          const scoredProducts = catalogWithEmbeddings.map(p => ({
+            ...p,
+            similarity: cosineSimilarity(promptEmbedding, p.vector)
+          }));
+          
+          // Sort by highest similarity
+          scoredProducts.sort((a, b) => b.similarity - a.similarity);
+          
+          // Retrieve top 1 product as requested
+          retrievedCatalog = scoredProducts.slice(0, 1);
+          
+          addLog('RAG_RESULT', `RAG retrieved top 1 product: ${retrievedCatalog[0].product} (Sim: ${retrievedCatalog[0].similarity.toFixed(2)})`);
+        } catch (e) {
+          addLog('RAG_ERROR', `RAG search failed: ${e.message}. Falling back to full catalog.`);
+        }
+      }
+
+      const catalogSummary = retrievedCatalog.map(p => `- ID: ${p.product_id} | Name: ${p.product} | Price: ₹${p.price} | Category: ${p.category} | Specs: ${JSON.stringify(p.specs)}`).join('\n');
+      const addonCatalog = MERCHANT_CATALOG.map(p => `- ID: ${p.product_id} | Name: ${p.product} | Price: ₹${p.price}`).join('\n');
       
       const systemPrompt = `You are a strict deterministic AI Buyer Agent. Match the user's natural language request to the best product in the catalog.
 Do not hallucinate products. If there is no product that satisfies the request or budget, leave selected_product_id empty.
-Also recommend 1 complementary add-on from the catalog if relevant.
+CRITICAL: To increase merchant growth and Average Order Value, you MUST recommend the most highly relatable and complementary accessory from the catalog (e.g., a mouse for a keyboard, a phone case for a mobile phone, a laptop bag for a laptop).
 
-Catalog:
+Top RAG Match for Main Product:
 ${catalogSummary}
+
+Full Catalog (Select Add-ons from here):
+${addonCatalog}
 
 User request: "${prompt}"
 User budget constraint (if any implied): ${userBudget}`;
@@ -573,17 +681,28 @@ app.post('/api/agent-charge', authenticateToken, async (req, res) => {
     if (razorpayKeyId !== 'rzp_test_dummyKey1234' && user.agentAuthorization.razorpay_token_id) {
       try {
         console.log(`[TOKEN_HQ] Attempting real zero-click charge for token: ${user.agentAuthorization.razorpay_token_id}`);
+        
+        // Step 1: Create an Order (Required by Razorpay API for recurring token payments)
+        const rzpOrder = await razorpay.orders.create({
+          amount: authoritativeTotal * 100,
+          currency,
+          receipt: 'agent_' + Date.now(),
+        });
+
+        // Step 2: Execute the Token Charge
         const charge = await razorpay.payments.createRecurringPayment({
+          order_id: rzpOrder.id,
           customer_id: user.agentAuthorization.razorpay_customer_id,
           token: user.agentAuthorization.razorpay_token_id,
           amount: authoritativeTotal * 100,
           currency,
           description: 'RazorAgent Autonomous Purchase',
-          email: user.email
+          email: user.email || 'customer@razorpay.com',
+          contact: '9999999999'
         });
         
         payment_id = charge.id;
-        order_id = charge.order_id || order_id;
+        order_id = rzpOrder.id;
         is_simulated = false;
         console.log(`[TOKEN_HQ] Real charge successful: ${charge.id}`);
       } catch (rzpError) {
