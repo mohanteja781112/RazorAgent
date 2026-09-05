@@ -2,10 +2,10 @@ import React from 'react';
 import { Sparkles, CheckCircle, Truck, Package, Tag, ShieldCheck } from 'lucide-react';
 
 const PRODUCT_IMAGES = {
-  kb_mech_01: 'public/images/keyboard_mech.jpg',
-  wrist_rest_01: 'public/images/wrist_rest.jpg',
-  mouse_pro_02: 'public/images/mouse_pro.jpg',
-  headset_anc_03: 'public/images/headset_anc.jpg',
+  kb_mech_01: '/images/keyboard_mech.jpg',
+  wrist_rest_01: '/images/wrist_rest.jpg',
+  mouse_pro_02: '/images/mouse_pro.jpg',
+  headset_anc_03: '/images/headset_anc.jpg',
 };
 
 export default function ProductCard({ item }) {

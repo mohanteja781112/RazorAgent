@@ -46,7 +46,7 @@ export default function SmartUpsellSection({
         <div className="md:col-span-7 flex items-center gap-3">
           <div className="w-16 h-16 rounded-xl bg-slate-900 border border-slate-800 shrink-0 overflow-hidden">
             <img 
-              src="public/images/wrist_rest.jpg" 
+              src="/images/wrist_rest.jpg" 
               alt="Ergonomic Wrist Rest" 
               className="w-full h-full object-cover"
               onError={(e) => {
