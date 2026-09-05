@@ -7,11 +7,13 @@ import {
   UserCheck, 
   ArrowRight,
   ShieldAlert,
-  CheckCircle2
+  CheckCircle2,
+  PackageX,
+  Wallet
 } from 'lucide-react';
 
 export default function FailureStateBanner({
-  mode, // 'BUDGET' | 'PAYMENT' | 'AMBIGUITY'
+  mode, // 'BUDGET' | 'BUDGET_EXCEEDED' | 'NOT_FOUND' | 'PAYMENT' | 'AMBIGUITY'
   cartTotal = 3798,
   userBudget = 3500,
   errorMessage = null,
@@ -19,6 +21,63 @@ export default function FailureStateBanner({
   onRetry,
   onSelectOption
 }) {
+  if (mode === 'NOT_FOUND') {
+    return (
+      <div className="rounded-2xl bg-gradient-to-r from-slate-900/80 via-[#111827] to-[#0f172a] border border-slate-600/40 p-6 shadow-2xl space-y-3">
+        <div className="flex items-start gap-3">
+          <div className="p-2.5 rounded-xl bg-slate-700/40 text-slate-300 border border-slate-600/30 shrink-0">
+            <PackageX className="w-6 h-6" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-base font-bold text-slate-100 font-heading">
+              Product not available
+            </h3>
+            <p className="text-xs text-slate-400 font-medium leading-relaxed">
+              {errorMessage || 'The requested product was not found in the merchant catalog.'}
+            </p>
+          </div>
+        </div>
+        <div className="bg-slate-800/60 rounded-xl p-3 border border-slate-700/40 text-xs text-slate-400">
+          💡 Try searching for a different product or check the catalog for available items.
+        </div>
+      </div>
+    );
+  }
+
+  if (mode === 'BUDGET_EXCEEDED') {
+    return (
+      <div className="rounded-2xl bg-gradient-to-r from-orange-950/40 via-[#1c1209] to-[#0f172a] border border-orange-500/40 p-6 shadow-2xl space-y-4">
+        <div className="flex items-start gap-3">
+          <div className="p-2.5 rounded-xl bg-orange-500/20 text-orange-400 border border-orange-500/30 shrink-0">
+            <Wallet className="w-6 h-6" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-base font-bold text-orange-300 font-heading">
+              Product exceeds your budget
+            </h3>
+            <p className="text-xs text-slate-300 font-medium leading-relaxed">
+              {errorMessage || 'The product price exceeds your autonomous spending limit.'}
+            </p>
+          </div>
+        </div>
+        <div className="bg-orange-500/10 rounded-xl p-3 border border-orange-500/20 text-xs text-orange-200/90 font-medium">
+          You can still proceed by manually authorizing this purchase below.
+        </div>
+        {onApprove && (
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onApprove}
+              className="flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-400 hover:to-amber-500 text-slate-950 font-extrabold text-xs shadow-lg transition-all"
+            >
+              <UserCheck className="w-4 h-4" />
+              <span>Approve & Continue</span>
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   if (mode === 'BUDGET') {
     return (
       <div className="rounded-2xl bg-gradient-to-r from-amber-950/40 via-[#191509] to-[#0f172a] border border-amber-500/40 p-6 shadow-2xl space-y-4">

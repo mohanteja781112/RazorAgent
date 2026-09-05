@@ -51,7 +51,7 @@ export default function WorkspaceView({ commerce, agentAuthorization, setIsAudit
       </div>
 
       {/* 3. ACTIVE TRANSACTION WORKSPACE */}
-      {(commerce.cart.length > 0 || commerce.policyStatus === 'UNCERTAIN' || commerce.policyStatus === 'BLOCKED_REQUIRES_APPROVAL') ? (
+      {(commerce.cart.length > 0 || commerce.policyStatus === 'UNCERTAIN' || commerce.policyStatus === 'BLOCKED_REQUIRES_APPROVAL' || commerce.policyStatus === 'NOT_FOUND' || commerce.policyStatus === 'BUDGET_EXCEEDED') ? (
         <div ref={workspaceRef} className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start scroll-mt-24">
           
           {/* LEFT / MAIN COLUMN: PRODUCTS & UPSELL */}
@@ -72,6 +72,19 @@ export default function WorkspaceView({ commerce, agentAuthorization, setIsAudit
                 mode="PAYMENT"
                 errorMessage={commerce.paymentErrorMessage}
                 onRetry={commerce.initiateRazorpayPayment}
+              />
+            ) : commerce.policyStatus === 'NOT_FOUND' ? (
+              /* PRODUCT NOT FOUND IN CATALOG */
+              <FailureStateBanner
+                mode="NOT_FOUND"
+                errorMessage={commerce.policyMessage}
+              />
+            ) : commerce.policyStatus === 'BUDGET_EXCEEDED' ? (
+              /* PRODUCT EXISTS BUT OVER BUDGET */
+              <FailureStateBanner
+                mode="BUDGET_EXCEEDED"
+                errorMessage={commerce.policyMessage}
+                onApprove={commerce.handleHumanGateApproval || commerce.initiateRazorpayPayment}
               />
             ) : commerce.policyStatus === 'UNCERTAIN' ? (
               /* AMBIGUITY FAILURE STATE */

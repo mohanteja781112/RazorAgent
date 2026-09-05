@@ -90,8 +90,13 @@ export function useAgentCommerce({ userEmail, agentAuthorization, setAgentAuthor
         setUpsellApplied(data.upsellApplied);
         setUpsellIncluded(!data.cart.some(item => item.exceeds_budget));
 
-        setCurrentStep(3); // Step 03: GUARD
-
+        // Only advance to GUARD step if a product was actually found.
+        // NOT_FOUND and UNCERTAIN cases should stop at DECIDE (step 2).
+        if (data.policyStatus === 'NOT_FOUND' || data.policyStatus === 'UNCERTAIN') {
+          setCurrentStep(2); // Stay at DECIDE — show error at this step
+        } else {
+          setCurrentStep(3); // Step 03: GUARD
+        }
         // We intentionally do not auto-open the modal or auto-progress to step 4.
         // The user must manually click "Continue & Pay" to confirm they are happy with the product.
       }

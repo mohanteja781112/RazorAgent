@@ -2,12 +2,11 @@ const express = require('express');
 const cors = require('cors');
 const crypto = require('crypto');
 const Razorpay = require('razorpay');
-const { ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings } = require("@langchain/google-genai");
 const { z } = require("zod");
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { GoogleGenAI } = require('@google/genai');
 require('dotenv').config();
 
 const app = express();
@@ -343,10 +342,10 @@ app.get('/api/v1/agent-catalog', (req, res) => {
 // -------------------------------------------------------------
 // 1.5 RAG SYSTEM: VECTOR EMBEDDINGS & SIMILARITY SEARCH
 // -------------------------------------------------------------
-const embeddings = new GoogleGenerativeAIEmbeddings({
-  modelName: "text-embedding-004",
-  apiKey: process.env.GEMINI_API_KEY || "dummy",
-});
+// Native @google/genai SDK — fully supports new AQ. auth key format
+const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || 'dummy' });
+const EMBEDDING_MODEL = 'gemini-embedding-001';
+const LLM_MODEL = 'gemini-3.5-flash-lite';
 
 let catalogWithEmbeddings = [];
 
@@ -364,6 +363,15 @@ const cosineSimilarity = (vecA, vecB) => {
   return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
 };
 
+// Embed a single text using the new @google/genai SDK
+const embedText = async (text) => {
+  const result = await genAI.models.embedContent({
+    model: EMBEDDING_MODEL,
+    contents: text,
+  });
+  return result.embeddings[0].values;
+};
+
 // Initialize embeddings on startup
 const initializeEmbeddings = async () => {
   if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === 'YOUR_GEMINI_KEY_HERE') {
@@ -371,20 +379,16 @@ const initializeEmbeddings = async () => {
     return;
   }
   
-  console.log("🔄 Generating embeddings for product catalog...");
+  console.log("🔄 Generating embeddings for product catalog using gemini-embedding-001...");
   try {
-    const textsToEmbed = MERCHANT_CATALOG.map(p => 
-      `${p.product} ${p.category} ${Object.values(p.specs).join(" ")}`
-    );
+    const embedded = [];
+    for (const product of MERCHANT_CATALOG) {
+      const text = `${product.product} ${product.category} ${Object.values(product.specs || {}).join(' ')}`;
+      const vector = await embedText(text);
+      embedded.push({ ...product, vector });
+    }
     
-    // Embed all documents
-    const docEmbeddings = await embeddings.embedDocuments(textsToEmbed);
-    
-    catalogWithEmbeddings = MERCHANT_CATALOG.map((product, index) => ({
-      ...product,
-      vector: docEmbeddings[index]
-    }));
-    
+    catalogWithEmbeddings = embedded;
     console.log(`✅ Successfully embedded ${catalogWithEmbeddings.length} products for RAG.`);
   } catch (error) {
     console.error("❌ Failed to generate catalog embeddings:", error.message);
@@ -403,32 +407,33 @@ const POLICY_RULES = {
   LOW_STOCK_THRESHOLD: 2
 };
 
-// Initialize LangChain Models with Fallback Switching
-const geminiFlash = new ChatGoogleGenerativeAI({
-  model: "gemini-3.6-flash",
-  apiKey: process.env.GEMINI_API_KEY || "dummy",
-  maxRetries: 1,
-});
+// LLM: Use @google/genai directly (fully supports AQ. auth keys)
+// LangChain's ChatGoogleGenerativeAI uses the old SDK internally and is incompatible.
+const invokeLLM = async (systemPrompt) => {
+  const response = await genAI.models.generateContent({
+    model: LLM_MODEL,
+    contents: systemPrompt,
+    config: {
+      responseMimeType: 'application/json',
+    }
+  });
+  const raw = response.text.trim();
+  // Strip markdown code fences if present
+  const jsonStr = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '');
+  return JSON.parse(jsonStr);
+};
 
-const geminiPro = new ChatGoogleGenerativeAI({
-  model: "gemini-3.6-pro",
-  apiKey: process.env.GEMINI_API_KEY || "dummy",
-  maxRetries: 1,
-});
-
-// LangChain native .withFallbacks mechanism
-let llm = geminiFlash.withFallbacks([geminiPro]);
-
-// Optional OpenAI Fallback if key is present in .env
+// OpenAI fallback (optional)
+let openAiLlm = null;
 if (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'YOUR_OPENAI_KEY_HERE') {
   try {
     const { ChatOpenAI } = require("@langchain/openai");
-    const openAiLlm = new ChatOpenAI({
+    openAiLlm = new ChatOpenAI({
       modelName: "gpt-4o-mini",
       openAIApiKey: process.env.OPENAI_API_KEY,
       maxRetries: 1
     });
-    llm = geminiFlash.withFallbacks([geminiPro, openAiLlm]);
+    console.log('✅ OpenAI fallback LLM initialized.');
   } catch (e) {
     console.log("LangChain OpenAI fallback optional package note:", e.message);
   }
@@ -469,31 +474,22 @@ app.post('/api/agent/interact', async (req, res) => {
     const hasOpenAI = process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'YOUR_OPENAI_KEY_HERE';
 
     if (hasGemini || hasOpenAI) {
-      // Apply structured output to the base model instead of the RunnableWithFallbacks wrapper
-      const structuredLlm = geminiFlash.withStructuredOutput(searchSchema);
-      
       // RAG Retrieval
       let retrievedCatalog = MERCHANT_CATALOG;
       
       if (catalogWithEmbeddings.length > 0) {
-        addLog('RAG_SEARCH', `Embedding user prompt and performing vector search...`);
+        addLog('RAG_SEARCH', `Embedding user prompt via ${EMBEDDING_MODEL} and performing cosine similarity search...`);
         try {
-          // Workaround for @langchain/google-genai embedQuery bug with text-embedding-004
-          const promptEmbedding = (await embeddings.embedDocuments([prompt]))[0];
+          const promptEmbedding = await embedText(prompt);
           
-          // Calculate similarities
           const scoredProducts = catalogWithEmbeddings.map(p => ({
             ...p,
             similarity: cosineSimilarity(promptEmbedding, p.vector)
           }));
-          
-          // Sort by highest similarity
           scoredProducts.sort((a, b) => b.similarity - a.similarity);
-          
-          // Retrieve top 1 product as requested
           retrievedCatalog = scoredProducts.slice(0, 1);
           
-          addLog('RAG_RESULT', `RAG retrieved top 1 product: ${retrievedCatalog[0].product} (Sim: ${retrievedCatalog[0].similarity.toFixed(2)})`);
+          addLog('RAG_RESULT', `RAG retrieved top 1: ${retrievedCatalog[0].product} (Sim: ${retrievedCatalog[0].similarity.toFixed(2)})`);
         } catch (e) {
           addLog('RAG_ERROR', `RAG search failed: ${e.message}. Falling back to full catalog.`);
         }
@@ -502,9 +498,18 @@ app.post('/api/agent/interact', async (req, res) => {
       const catalogSummary = retrievedCatalog.map(p => `- ID: ${p.product_id} | Name: ${p.product} | Price: ₹${p.price} | Category: ${p.category} | Specs: ${JSON.stringify(p.specs)}`).join('\n');
       const addonCatalog = MERCHANT_CATALOG.map(p => `- ID: ${p.product_id} | Name: ${p.product} | Price: ₹${p.price}`).join('\n');
       
-      const systemPrompt = `You are a strict deterministic AI Buyer Agent. Match the user's natural language request to the best product in the catalog.
-Do not hallucinate products. If there is no product that satisfies the request or budget, leave selected_product_id empty.
-CRITICAL: To increase merchant growth and Average Order Value, you MUST recommend the most highly relatable and complementary accessory from the catalog (e.g., a mouse for a keyboard, a phone case for a mobile phone, a laptop bag for a laptop).
+      const systemPrompt = `You are a strict deterministic AI Buyer Agent. Match the user request to the best product.
+Do NOT hallucinate products. Only pick product_ids from the provided catalog.
+If no product matches, set selected_product_id to empty string.
+CRITICAL: Recommend the most relatable complementary accessory (e.g., mouse for keyboard, phone case for phone).
+
+Respond ONLY with a valid JSON object matching this schema:
+{
+  "selected_product_id": "string (the product_id, or empty string if no match)",
+  "is_ambiguous": boolean,
+  "reasoning": "string",
+  "recommended_addons": ["array of product_id strings"]
+}
 
 Top RAG Match for Main Product:
 ${catalogSummary}
@@ -513,14 +518,34 @@ Full Catalog (Select Add-ons from here):
 ${addonCatalog}
 
 User request: "${prompt}"
-User budget constraint (if any implied): ${userBudget}`;
+User budget: ₹${userBudget}`;
 
-      const result = await structuredLlm.invoke(systemPrompt);
+      let result;
+      try {
+        // Primary: native @google/genai (fully supports AQ. auth keys)
+        result = await invokeLLM(systemPrompt);
+        addLog('LLM_REASONING', `Decision via Gemini (${LLM_MODEL}): ${result.reasoning}`);
+      } catch (geminiErr) {
+        addLog('LLM_FALLBACK', `Gemini failed: ${geminiErr.message}. Trying OpenAI...`);
+        if (openAiLlm) {
+          const { z: zod } = require('zod');
+          const searchSchema = zod.object({
+            selected_product_id: zod.string(),
+            is_ambiguous: zod.boolean(),
+            reasoning: zod.string(),
+            recommended_addons: zod.array(zod.string())
+          });
+          const oaiResult = await openAiLlm.withStructuredOutput(searchSchema).invoke(systemPrompt);
+          result = oaiResult;
+          addLog('LLM_REASONING', `Decision via OpenAI fallback: ${result.reasoning}`);
+        } else {
+          throw geminiErr;
+        }
+      }
+
       llmAmbiguous = result.is_ambiguous;
       llmReasoning = result.reasoning;
       llmAddons = result.recommended_addons || [];
-      
-      addLog('LLM_REASONING', `Decision via LangChain: ${llmReasoning}`);
 
       if (!llmAmbiguous && result.selected_product_id) {
         matchedProduct = MERCHANT_CATALOG.find(p => p.product_id === result.selected_product_id);
@@ -537,12 +562,14 @@ User budget constraint (if any implied): ${userBudget}`;
   }
 
   if (!matchedProduct) {
-    addLog('POLICY_CHECK', 'BLOCKED: No matching product found in the catalog.');
+    // Determine reason: ambiguous query vs truly not in catalog
+    const isNotInCatalog = !llmAmbiguous;
+    addLog('POLICY_CHECK', isNotInCatalog ? 'BLOCKED: Product not found in catalog.' : 'UNCERTAIN: Query too ambiguous.');
     return res.json({
       status: 'SUCCESS',
       cart: [],
       totalAmount: 0,
-      policyStatus: 'UNCERTAIN',
+      policyStatus: isNotInCatalog ? 'NOT_FOUND' : 'UNCERTAIN',
       policyMessage: llmReasoning || 'No suitable product was found in the catalog for your request.',
       requiresHumanApproval: false,
       upsellApplied: false,
@@ -618,9 +645,9 @@ User budget constraint (if any implied): ${userBudget}`;
     policyMessage = 'High query ambiguity detected. Agent requires clarification on product specs.';
     addLog('POLICY_CHECK', 'UNCERTAIN: Query match confidence < 80% → Requesting User Clarification');
   } else if (totalAmount > userBudget) {
-    policyStatus = 'BLOCKED_REQUIRES_APPROVAL';
+    policyStatus = 'BUDGET_EXCEEDED';
     requiresHumanApproval = true;
-    policyMessage = `Main product ₹${totalAmount} exceeds autonomous budget limit of ₹${userBudget}.`;
+    policyMessage = `The product you requested (₹${totalAmount.toLocaleString('en-IN')}) exceeds your autonomous spend limit of ₹${userBudget.toLocaleString('en-IN')}. Manual approval required.`;
     addLog('POLICY_CHECK', `BLOCKED: Cart total ₹${totalAmount} > Limit ₹${userBudget} → Human Gate Triggered`);
   } else {
     addLog('POLICY_CHECK', 'APPROVED: Policy checks passed successfully');
