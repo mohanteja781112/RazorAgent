@@ -9,8 +9,9 @@ export default function TransactionHistoryModal({ isOpen, onClose }) {
     if (isOpen) {
       const token = localStorage.getItem('razoragent_token');
       if (token) {
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
         setLoading(true);
-        fetch('/api/user/transactions', {
+        fetch(`${API_BASE}/api/user/transactions`, {
           headers: { 'Authorization': `Bearer ${token}` }
         })
         .then(res => res.json())

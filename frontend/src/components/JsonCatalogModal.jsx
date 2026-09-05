@@ -9,7 +9,8 @@ export default function JsonCatalogModal({ isOpen, onClose }) {
   useEffect(() => {
     if (isOpen) {
       setLoading(true);
-      fetch('/api/v1/agent-catalog')
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+      fetch(`${API_BASE}/api/v1/agent-catalog`)
         .then(res => res.json())
         .then(data => {
           setCatalogData(data);

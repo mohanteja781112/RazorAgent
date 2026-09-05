@@ -51,8 +51,10 @@ export default function App() {
   // Fetch Session on Mount
   useEffect(() => {
     const token = localStorage.getItem('razoragent_token');
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+    
     if (token) {
-      fetch('/api/user/me', {
+      fetch(`${API_BASE}/api/user/me`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       .then(res => res.json())

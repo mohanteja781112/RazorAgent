@@ -16,7 +16,8 @@ export default function AuthOverlay({ initialMode = 'login', onLogin, onClose })
     setIsLoading(true);
 
     try {
-      const endpoint = isLoginMode ? '/api/auth/login' : '/api/auth/register';
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+      const endpoint = isLoginMode ? `${API_BASE}/api/auth/login` : `${API_BASE}/api/auth/register`;
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

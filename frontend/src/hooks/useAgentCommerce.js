@@ -62,7 +62,8 @@ export function useAgentCommerce({ userEmail, agentAuthorization, setAgentAuthor
 
     try {
       const token = localStorage.getItem('razoragent_token');
-      const response = await fetch('/api/agent/interact', {
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+      const response = await fetch(`${API_BASE}/api/agent/interact`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -147,7 +148,8 @@ export function useAgentCommerce({ userEmail, agentAuthorization, setAgentAuthor
         return;
       }
 
-      const res = await fetch('/api/agent-payment/authorize', {
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+      const res = await fetch(`${API_BASE}/api/agent-payment/authorize`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -171,8 +173,8 @@ export function useAgentCommerce({ userEmail, agentAuthorization, setAgentAuthor
         customer_id: orderData.customer_id,
         handler: async function (response) {
           appendTelemetryLog('AUTHORIZATION_PAYMENT_SUCCESS', 'Verifying signature securely on backend...');
-          
-          const verifyRes = await fetch('/api/agent-payment/verify', {
+          const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+          const verifyRes = await fetch(`${API_BASE}/api/agent-payment/verify`, {
             method: 'POST',
             headers: { 
               'Content-Type': 'application/json',
@@ -230,7 +232,8 @@ export function useAgentCommerce({ userEmail, agentAuthorization, setAgentAuthor
     appendTelemetryLog('AGENT_PAYMENT_REVOKE', 'Revoking agent payments authorization...');
     try {
       const token = localStorage.getItem('razoragent_token');
-      const res = await fetch('/api/agent-payment/revoke', {
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+      const res = await fetch(`${API_BASE}/api/agent-payment/revoke`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -260,7 +263,8 @@ export function useAgentCommerce({ userEmail, agentAuthorization, setAgentAuthor
         const cartIds = activeCart.map(item => item.product_id);
 
         const token = localStorage.getItem('razoragent_token');
-        const res = await fetch('/api/agent-charge', {
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+        const res = await fetch(`${API_BASE}/api/agent-charge`, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
@@ -296,7 +300,8 @@ export function useAgentCommerce({ userEmail, agentAuthorization, setAgentAuthor
       const cartIds = activeCart.map(item => item.product_id);
 
       const token = localStorage.getItem('razoragent_token');
-      const res = await fetch('/api/create-order', {
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+      const res = await fetch(`${API_BASE}/api/create-order`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -386,7 +391,8 @@ export function useAgentCommerce({ userEmail, agentAuthorization, setAgentAuthor
       // Simulate 2-second S2S processing time for the prototype
       await new Promise(resolve => setTimeout(resolve, 2000));
 
-      const res = await fetch('/api/verify-payment', {
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+      const res = await fetch(`${API_BASE}/api/verify-payment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
