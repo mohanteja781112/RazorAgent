@@ -272,7 +272,7 @@ export function useAgentCommerce({ userEmail, agentAuthorization, setAgentAuthor
         const orderData = await res.json();
         if (!orderData.success) throw new Error(orderData.message);
 
-        verifyPaymentOnBackend({
+        await verifyPaymentOnBackend({
           razorpay_order_id: orderData.order_id,
           razorpay_payment_id: orderData.payment_id,
           razorpay_signature: 'agent_autopay_signature',
@@ -284,8 +284,8 @@ export function useAgentCommerce({ userEmail, agentAuthorization, setAgentAuthor
         setPaymentVerified(false);
         setPaymentFailed(true);
         setPaymentErrorMessage(`Agent AutoPay Blocked: ${err.message}`);
+        setIsProcessingPayment(false);
       }
-      setIsProcessingPayment(false);
       return;
     }
 
@@ -379,9 +379,13 @@ export function useAgentCommerce({ userEmail, agentAuthorization, setAgentAuthor
   };
 
   const verifyPaymentOnBackend = async (paymentPayload, forceSimulateFailure = false) => {
+    setIsProcessingPayment(true);
     appendTelemetryLog('PAYMENT_VERIFICATION_INIT', 'Sending payment payload for backend HMAC validation...');
 
     try {
+      // Simulate 2-second S2S processing time for the prototype
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
       const res = await fetch('/api/verify-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -404,10 +408,10 @@ export function useAgentCommerce({ userEmail, agentAuthorization, setAgentAuthor
         setPaymentErrorMessage(verifyData.message || 'Payment decline');
         appendTelemetryLog('PAYMENT_VERIFICATION_FAILED', verifyData.telemetry || verifyData.message);
         appendTelemetryLog('RETRY_ENGINE', 'Preserving cart state. No duplicate order created. Clean retry available.');
+        setIsProcessingPayment(false);
       }
     } catch (err) {
       appendTelemetryLog('ERROR', `Verification Error: ${err.message}`);
-    } finally {
       setIsProcessingPayment(false);
     }
   };

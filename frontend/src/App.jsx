@@ -62,11 +62,19 @@ export default function App() {
           setAgentAuthorization(data.user.agentAuthorization);
           setUserEmail(data.user.email);
           setUserRole(data.user.role || 'user');
+        } else {
+          // Token is invalid or expired, log them out properly
+          localStorage.removeItem('razoragent_token');
+          localStorage.removeItem('razoragent_view');
+          setCurrentView('landing');
         }
         setIsInitializing(false);
       })
       .catch(err => {
         console.error("Session restore failed:", err);
+        localStorage.removeItem('razoragent_token');
+        localStorage.removeItem('razoragent_view');
+        setCurrentView('landing');
         setIsInitializing(false);
       });
     } else {
