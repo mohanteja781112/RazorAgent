@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 export function useAgentCommerce({ userEmail, agentAuthorization, setAgentAuthorization, setIsMandateModalOpen }) {
   // Form & Budget State
-  const [promptInput, setPromptInput] = useState('Find me a mechanical keyboard under ₹4,000 and buy it');
+  const [promptInput, setPromptInput] = useState('');
   const [userBudget, setUserBudget] = useState(5000);
 
   // Workflow & Active Commerce State
